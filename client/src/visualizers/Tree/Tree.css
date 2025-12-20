@@ -1,0 +1,14 @@
+.tree-canvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  background: rgba(255,255,255,0.02);
+}
+
+.tree-canvas svg {
+  min-width: 800px;
+  min-height: 600px;
+}

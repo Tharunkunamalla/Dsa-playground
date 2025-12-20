@@ -1,0 +1,97 @@
+.dll-canvas {
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.dll-list {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dll-node-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dll-node {
+  width: 90px;
+  height: 60px;
+  background: white;
+  border: 2px solid var(--secondary);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.5s;
+}
+
+.node-val {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.node-ptrs {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 0 5px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ptr {
+  width: 6px;
+  height: 6px;
+  background: var(--text-muted);
+  border-radius: 50%;
+}
+
+.dll-arrows {
+  display: flex;
+  flex-direction: column;
+  color: var(--text-muted);
+  gap: 2px;
+}
+
+.arrow-right { transform: translateY(2px); }
+.arrow-left { transform: translateY(-2px); }
+
+.dll-null {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.dll-arrow-wrapper {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* Animations */
+.new-node {
+  transform: scale(0);
+  background: #cffafe;
+  border-color: #06b6d4;
+  animation: popIn 0.5s forwards;
+}
+
+.deleted-node {
+  transform: scale(0);
+  opacity: 0;
+  background: #fee2e2;
+}
+
+body.dark-mode .dll-node {
+  color: #1f2937;
+}

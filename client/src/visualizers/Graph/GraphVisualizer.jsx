@@ -1,0 +1,153 @@
+import { useState } from 'react';
+import VisualizerLayout from '../common/VisualizerLayout';
+import './Graph.css';
+
+const GraphVisualizer = () => {
+  // Pre-defined graph structure for MVP
+  const initialNodes = [
+    { id: 0, x: 100, y: 100, value: 'A' },
+    { id: 1, x: 300, y: 100, value: 'B' },
+    { id: 2, x: 500, y: 100, value: 'C' },
+    { id: 3, x: 200, y: 300, value: 'D' },
+    { id: 4, x: 400, y: 300, value: 'E' },
+  ];
+
+  const initialEdges = [
+    { source: 0, target: 1 },
+    { source: 0, target: 3 },
+    { source: 1, target: 2 },
+    { source: 1, target: 4 },
+    { source: 1, target: 3 },
+    { source: 2, target: 4 },
+  ];
+
+  const [nodes, setNodes] = useState(initialNodes);
+  const [visited, setVisited] = useState(new Set());
+  const [current, setCurrent] = useState(null);
+  const [queue, setQueue] = useState([]);
+  const [log, setLog] = useState([]);
+  const [animating, setAnimating] = useState(false);
+
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const runBFS = async () => {
+    if (animating) return;
+    setAnimating(true);
+    setVisited(new Set());
+    setLog([]);
+    setQueue([]);
+    
+    const startNode = 0;
+    const q = [startNode];
+    const seen = new Set([startNode]);
+    
+    setLog(prev => [`Starting BFS from Node ${initialNodes[startNode].value}`]);
+    setVisited(new Set([startNode]));
+    setQueue([startNode]);
+    
+    await wait(1000);
+
+    while (q.length > 0) {
+      const currId = q.shift();
+      setCurrent(currId);
+      setQueue([...q]);
+      
+      setLog(prev => [`Visiting Node ${initialNodes[currId].value}`, ...prev]);
+      await wait(1000);
+
+      // Get neighbors
+      const neighbors = initialEdges
+        .filter(e => e.source === currId || e.target === currId)
+        .map(e => e.source === currId ? e.target : e.source)
+        .sort((a,b) => a - b); // consistent order
+
+      for (const neighborId of neighbors) {
+        if (!seen.has(neighborId)) {
+          seen.add(neighborId);
+          q.push(neighborId);
+          setVisited(new Set(seen));
+          setQueue([...q]);
+          setLog(prev => [`Queueing Node ${initialNodes[neighborId].value}`, ...prev]);
+          await wait(800);
+        }
+      }
+    }
+    
+    setCurrent(null);
+    setLog(prev => ['BFS Completed', ...prev]);
+    setAnimating(false);
+  };
+
+  const reset = () => {
+    if (animating) {
+       // Ideally cancel promise, but for now just clear state
+       // window.location.reload(); // naive fix
+    }
+    setVisited(new Set());
+    setCurrent(null);
+    setQueue([]);
+    setLog([]);
+    setAnimating(false);
+  };
+
+  return (
+    <VisualizerLayout
+      title="Graph Traversal (BFS)"
+      complexity={{ operation: 'BFS', time: 'O(V + E)', space: 'O(V)' }}
+      activityLog={log}
+      onReset={reset}
+    >
+      <div className="controls-group">
+        <button onClick={runBFS} disabled={animating} className="control-btn primary">Start BFS</button>
+      </div>
+
+      <div className="graph-canvas">
+        <svg width="100%" height="100%" viewBox="0 0 600 400">
+           {/* Edges */}
+             {initialEdges.map((edge, idx) => {
+               const start = nodes.find(n => n.id === edge.source);
+               const end = nodes.find(n => n.id === edge.target);
+               if (!start || !end) return null; // Safe guard
+               
+               const isVisited = visited.has(edge.source) && visited.has(edge.target); 
+               // Simple logic: edge is 'active' if both ends visited? Or just part of structure.
+               return (
+               <line 
+                 key={idx}
+                 x1={start.x} y1={start.y}
+                 x2={end.x} y2={end.y}
+                 stroke={isVisited ? "#6366f1" : "#cbd5e1"}
+                 strokeWidth="3"
+               />
+             );
+           })}
+
+           {/* Nodes */}
+           {nodes.map((node) => (
+             <g key={node.id}>
+               <circle 
+                 cx={node.x} cy={node.y} 
+                 r="25" 
+                 fill={current === node.id ? '#f59e0b' : visited.has(node.id) ? '#10b981' : 'white'}
+                 stroke="#4b5563"
+                 strokeWidth="2"
+                 className="node-circle"
+               />
+               <text 
+                 x={node.x} y={node.y} 
+                 dy=".3em" 
+                 textAnchor="middle" 
+                 fontWeight="bold"
+                 fill={visited.has(node.id) || current === node.id ? 'white' : '#1f2937'}
+               >
+                 {node.value}
+               </text>
+             </g>
+           ))}
+        </svg>
+      </div>
+    </VisualizerLayout>
+  );
+};
+
+export default GraphVisualizer;

@@ -1,0 +1,177 @@
+.viz-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.viz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.viz-breadcrumbs {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.breadcrumb-link {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.breadcrumb-sep {
+  margin: 0 10px;
+}
+
+.breadcrumb-curr {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary);
+  font-weight: 500;
+  transition: transform 0.2s;
+}
+
+.back-btn:hover {
+  transform: translateX(-4px);
+}
+
+/* Grid Layout */
+.viz-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-rows: 1fr; /* Force single row filling height */
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden; /* Prevent grid itself from growing */
+}
+
+/* Panels */
+.viz-panel {
+  display: flex;
+  flex-direction: column;
+  /* background/border handled by glass-card class in JSX */
+  overflow: hidden; 
+  max-height: 100%;
+}
+
+.controls-panel {
+  padding: 20px;
+  overflow-y: auto; /* Allow scroll if controls are many */
+}
+
+.canvas-panel {
+  background: rgba(255, 255, 255, 0.9);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid rgba(255, 255, 255, 0.5);
+}
+
+.canvas-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto; /* Allow canvas itself to scroll if content is huge, or hidden for viz logic */
+}
+
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden; /* Don't let info panel grow */
+}
+
+.complexity-card {
+  padding: 20px;
+  flex-shrink: 0; /* Complexity shouldn't shrink */
+}
+
+.activity-card {
+  flex: 1; /* Take remaining space */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  min-height: 0; /* Enable flex shrinking */
+}
+
+.activity-list {
+  flex: 1;
+  overflow-y: auto; /* Scroll INSIDE the card */
+  margin-top: 10px;
+  padding-right: 5px;
+}
+
+.activity-item {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  border-left: 3px solid var(--primary);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.panel-header h3, .complexity-card h3, .activity-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.reset-btn {
+  background: none;
+  border: none;
+  /* color: var(--secondary); User requested specific palette? using secondary var */
+  color: #6366f1; /* Using primary color actually looks better */
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  text-decoration: underline;
+}
+
+.text-muted {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .viz-grid {
+    grid-template-columns: 250px 1fr 250px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .viz-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  
+  .canvas-panel {
+    min-height: 400px;
+    order: -1; /* Canvas first on mobile */
+  }
+}

@@ -1,0 +1,167 @@
+/* Inherit generic canvas centering */
+.stack-canvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Keep centered */
+  padding: 20px;
+  overflow: auto; /* Allow scroll if stack gets HUGE */
+}
+
+.stack-container {
+  display: flex;
+  flex-direction: column-reverse; /* Bottom-up stack */
+  width: 150px;
+  min-height: 400px;
+  border-left: 4px solid rgba(99, 102, 241, 0.3);
+  border-right: 4px solid rgba(99, 102, 241, 0.3);
+  padding: 10px;
+  position: relative;
+  background: rgba(255,255,255,0.1);
+  /* Ensure it doesn't grow infinitely in a way that breaks layout, 
+     but actually visual stack SHOULD grow. 
+     The parent .stack-canvas overflow:auto will handle it. */
+}
+
+.stack-base {
+  width: 170px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 4px;
+  margin-top: -4px; /* Connect to borders */
+}
+
+.stack-item {
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(135deg, #a5b4fc, #818cf8);
+  border: 2px solid white;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  position: relative;
+  transition: all 0.3s;
+  flex-shrink: 0; /* Don't squash items */
+}
+
+.item-index {
+  position: absolute;
+  right: -80px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: 60px;
+  text-align: left;
+}
+
+.empty-message {
+  margin: auto;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Animations */
+.slide-in {
+  animation: slideInTop 0.5s ease-out forwards;
+}
+
+.slide-out {
+  animation: flyRight 0.5s ease-in forwards;
+}
+
+.highlight {
+  background: #f59e0b;
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+@keyframes slideInTop {
+  from { transform: translateY(-50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes flyRight {
+  to { transform: translateX(200px); opacity: 0; }
+}
+
+.viz-message {
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.viz-info-note {
+  margin-top: auto;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Controls Layout Fixes */
+.controls-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.input-with-btn {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.input-with-btn .control-input {
+  flex: 1;
+  min-width: 0; /* Allow shrinking */
+}
+
+.input-with-btn .control-btn {
+  flex: 0 0 auto; /* Do NOT shrink */
+  white-space: nowrap;
+}
+
+.button-group-row {
+  display: flex;
+  gap: 10px;
+}
+
+.control-btn {
+  flex: 1; 
+  white-space: nowrap; /* Prevent text wrap */
+  padding: 8px 4px; /* Slightly tighter padding */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px; /* Ensure minimum click area */
+}
+
+.control-btn.warning {
+  background: #f59e0b;
+  color: white;
+}
+.control-btn.warning:hover:not(:disabled) {
+  background: #d97706;
+}
+.control-btn.secondary {
+  background: #8b5cf6;
+  color: white;
+}
+.control-btn.secondary:hover:not(:disabled) {
+  background: #7c3aed;
+}
+
+body.dark-mode .stack-item {
+   color: #1f2937;
+}

@@ -1,0 +1,132 @@
+.striver-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sheet-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.sheet-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sheet-header p {
+  color: var(--text-muted);
+}
+
+.topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.topic-card {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.topic-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.4);
+  transition: background 0.2s;
+}
+
+.topic-header:hover {
+  background: rgba(255,255,255,0.6);
+}
+
+.topic-header.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.topic-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-main);
+}
+
+.problems-list {
+  padding: 1rem;
+  background: rgba(255,255,255,0.2);
+}
+
+.problem-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.2s;
+  border-radius: 8px;
+}
+
+.problem-item:last-child {
+  border-bottom: none;
+}
+
+.problem-item:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.problem-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.problem-title {
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.problem-item.completed .problem-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.yt-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ef4444;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.1);
+  transition: background 0.2s;
+}
+
+.yt-link:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.check-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.check-btn .text-green {
+  color: #10b981;
+}
+
+.check-btn:hover {
+  transform: scale(1.1);
+}
