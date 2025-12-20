@@ -1,7 +1,8 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/auth.js';
 
 dotenv.config();
 
@@ -22,8 +23,7 @@ app.get('/', (req, res) => {
   res.send('DSA Visualizer API is running');
 });
 
-// Import Routes
-const authRoutes = require('./routes/auth');
+// User Routes
 app.use('/api/auth', authRoutes);
 
 app.listen(PORT, () => {
