@@ -37,8 +37,8 @@ A comprehensive Data Structures and Algorithms visualization platform with inter
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
-- **Node.js** (v14 or higher)
-- **npm** (v6 or higher)
+- **Node.js** (v18 or higher)
+- **npm** (v8 or higher)
 - **MongoDB** (v4.4 or higher)
 
 ## 🚀 Installation
