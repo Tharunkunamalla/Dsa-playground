@@ -125,13 +125,14 @@ const StackVisualizer = () => {
       <div className="stack-canvas">
         <div className="stack-container">
           {stack.length === 0 && <div className="empty-message">Empty Stack</div>}
-          {stack.slice().reverse().map((item, index) => ( // Reverse for visual stack (top at top)
+          {stack.slice().map((item, index) => ( // Reverse for visual stack (top at top) .reverse()
             <div 
               key={item.id} 
               className={`stack-item ${item.isNew ? 'slide-in' : ''} ${item.isDeleted ? 'slide-out' : ''} ${item.isHighlighted ? 'highlight' : ''}`}
             >
               <span className="item-value">{item.value}</span>
-              <span className="item-index">Index: {stack.length - 1 - index}</span> 
+              <span className="item-index">Index: {index}</span>  
+              {/* {stack.length - 1 - index} */}
             </div>
           ))}
         </div>
