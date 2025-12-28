@@ -1,8 +1,27 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 import { FaLayerGroup, FaProjectDiagram, FaSortAmountDown, FaTree, FaStream, FaCode } from 'react-icons/fa';
 import './LandingPage.css';
 
 const LandingPage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCardClick = (path) => {
+    if (user) {
+      navigate(path);
+    } else {
+      toast.error("Please login to visualize!");
+      const loginBtn = document.getElementById('login-btn');
+      if (loginBtn) {
+        loginBtn.classList.add('blink-animation');
+        setTimeout(() => {
+          loginBtn.classList.remove('blink-animation');
+        }, 2000);
+      }
+    }
+  };
   const dsCards = [
     { title: 'Linked List', desc: 'Singly list: insert, delete, update', icon: <FaStream />, path: '/visualizer/linked-list', color: '#6366f1' },
     { title: 'Stack', desc: 'Push, pop, peek', icon: <FaLayerGroup />, path: '/visualizer/stack', color: '#ec4899' },
@@ -34,9 +53,9 @@ const LandingPage = () => {
             </div>
             <h3 className="card-title">{card.title}</h3>
             <p className="card-desc">{card.desc}</p>
-            <Link to={card.path} className="card-link" style={{ color: card.color }}>
+            <div onClick={() => handleCardClick(card.path)} className="card-link" style={{ color: card.color, cursor: 'pointer' }}>
               Open Visualizer ↗
-            </Link>
+            </div>
           </div>
         ))}
       </div>

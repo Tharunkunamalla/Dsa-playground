@@ -75,7 +75,7 @@ const Layout = () => {
               </button>
             </div>
           ) : (
-            <Link to="/login" className="login-btn-nav">Login</Link>
+            <Link to="/login" id="login-btn" className="login-btn-nav">Login</Link>
           )}
         </div>
       </nav>

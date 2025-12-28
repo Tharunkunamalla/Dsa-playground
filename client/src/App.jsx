@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
@@ -12,6 +13,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster position="top-center" reverseOrder={false} />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<LandingPage />} />
