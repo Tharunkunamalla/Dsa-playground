@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaBars, FaTimes, FaHome, FaCode, FaLayerGroup, FaSignOutAlt, FaMoon, FaSun, FaUserCircle } from 'react-icons/fa';
 import './Layout.css';
+import AnimatedBackground from './common/AnimatedBackground';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -48,6 +49,7 @@ const Layout = () => {
 
   return (
     <div className="layout-container">
+      <AnimatedBackground />
       {/* Top Navbar */}
       <nav className="top-navbar glass-card">
         <div className="nav-left">

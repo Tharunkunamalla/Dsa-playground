@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import VisualizerLayout from '../common/VisualizerLayout';
+import GlassDropdown from '../../components/common/GlassDropdown';
 import './Sorting.css';
 
 const SortingVisualizer = () => {
@@ -265,18 +266,18 @@ const SortingVisualizer = () => {
       {/* Controls */}
       <div className="controls-group">
         <label className="text-sm font-semibold text-gray-500">Algorithm</label>
-        <select 
-          className="control-input" 
-          value={algorithm} 
-          onChange={(e) => setAlgorithm(e.target.value)}
+        <GlassDropdown 
+          options={[
+            { value: 'bubble', label: 'Bubble Sort' },
+            { value: 'insertion', label: 'Insertion Sort' },
+            { value: 'selection', label: 'Selection Sort' },
+            { value: 'merge', label: 'Merge Sort' },
+            { value: 'quick', label: 'Quick Sort' },
+          ]}
+          value={algorithm}
+          onChange={setAlgorithm}
           disabled={animating}
-        >
-          <option value="bubble">Bubble Sort</option>
-          <option value="insertion">Insertion Sort</option>
-          <option value="selection">Selection Sort</option>
-          <option value="merge">Merge Sort</option>
-          <option value="quick">Quick Sort</option>
-        </select>
+        />
         
         <div className="button-group-row">
           <button onClick={generateArray} disabled={animating} className="control-btn secondary">Generate New</button>

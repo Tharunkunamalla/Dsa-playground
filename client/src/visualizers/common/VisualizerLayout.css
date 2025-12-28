@@ -175,3 +175,20 @@
     order: -1; /* Canvas first on mobile */
   }
 }
+
+.complexity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.complexity-details div {
+  font-size: 0.95rem;
+  color: #1f2937; 
+}
+
+.complexity-label {
+  font-weight: 600;
+  color: #6366f1; 
+  margin-right: 6px;
+}

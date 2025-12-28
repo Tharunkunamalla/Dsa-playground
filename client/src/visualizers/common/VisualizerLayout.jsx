@@ -41,7 +41,19 @@ const VisualizerLayout = ({ title, children, complexity, activityLog, onReset })
           <div className="glass-card complexity-card">
             <h3>Complexity</h3>
             <div className="complexity-content">
-              {complexity || <p className="text-muted">Run an operation to see its complexity.</p>}
+              {complexity ? (
+                typeof complexity === 'string' ? (
+                  <p>{complexity}</p>
+                ) : (
+                  <div className="complexity-details">
+                    <div><span className="complexity-label">Operation:</span> {complexity.operation}</div>
+                    <div><span className="complexity-label">Time:</span> {complexity.time}</div>
+                    <div><span className="complexity-label">Space:</span> {complexity.space}</div>
+                  </div>
+                )
+              ) : (
+                <p className="text-muted">Run an operation to see its complexity.</p>
+              )}
             </div>
           </div>
           

@@ -18,10 +18,47 @@ const BSTVisualizer = () => {
   const [activityLog, setActivityLog] = useState([]);
   const [complexity, setComplexity] = useState(null);
   const [animating, setAnimating] = useState(false);
-  const [highlightNode, setHighlightNode] = useState(null);
+  
+  // State for SVG ViewBox
+  const [treeBounds, setTreeBounds] = useState({ minX: 0, maxX: 800, minY: 0, maxY: 600 });
 
   const log = (msg) => setActivityLog(prev => [msg, ...prev]);
   const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Helper to Calculate Node Positions and Bounds
+  const calculateLayout = (node) => {
+    if (!node) return { minX: 0, maxX: 800, minY: 0, maxY: 600 };
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = 0; // Root always at 50 (ignoring padding for calc)
+    let maxY = 0;
+
+    const traverse = (n, x, y, level) => {
+      if (!n) return;
+      
+      n.x = x;
+      n.y = y;
+      
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+
+      const gap = 200 / (level * 1.2); // Reduces gap as we go deeper
+      traverse(n.left, x - gap, y + 80, level + 1);
+      traverse(n.right, x + gap, y + 80, level + 1);
+    };
+
+    traverse(node, 400, 50, 1);
+    
+    // Add some padding
+    return {
+      minX: minX - 50,
+      maxX: maxX + 50,
+      minY: minY - 50,
+      maxY: maxY + 100 // More padding at bottom
+    };
+  };
 
   const insert = async () => {
     const val = parseInt(inputValue);
@@ -31,39 +68,34 @@ const BSTVisualizer = () => {
     log(`Inserting ${val}`);
 
     if (!root) {
-      setRoot(new TreeNode(val));
+      const newRoot = new TreeNode(val);
+      newRoot.x = 400;
+      newRoot.y = 50;
+      setRoot(newRoot);
+      setTreeBounds(calculateLayout(newRoot));
       log(`Root created: ${val}`);
       setInputValue('');
       setAnimating(false);
       return;
     }
 
-    let current = root;
-    // Traverse animation needs deep copy or state manipulation logic
-    // For simplicity in React, we just update the structure directly for now
-    // In a real generic viz, we would animate the traversal path.
-    
+    // Clone tree
+    // We need a proper deep clone to modify safe properties
+    // For this simple structure, JSON parse/stringify is "ok" but loses class methods if any
+    // Let's rebuild the structure with traverse to be safer or just use the JSON hack for MVP data
+    const newRoot = JSON.parse(JSON.stringify(root));
 
-
-    // Clone tree to trigger re-render
-    const newRoot = JSON.parse(JSON.stringify(root)); // Shallow-ish clone for structure
-    // Re-creating class instances manually for the traversal if methods needed, 
-    // but here we just use data objects for rendering. 
-    // Actually, JSON.parse loses class type. Let's use a simpler object approach.
-    
-    // Re-implementing insert with pure objects for easier cloning
-    // Recursive insert helper with duplicate prevention
     const insertObj = (node, value) => {
-      if (value === node.value) return false; // No duplicates
+      if (value === node.value) return false;
       if (value < node.value) {
          if (!node.left) {
-           node.left = { value, left: null, right: null };
+           node.left = { value, left: null, right: null, x: 0, y: 0 };
            return true; 
          }
          return insertObj(node.left, value);
       } else {
          if (!node.right) {
-           node.right = { value, left: null, right: null };
+           node.right = { value, left: null, right: null, x: 0, y: 0 };
            return true;
          }
          return insertObj(node.right, value);
@@ -78,7 +110,11 @@ const BSTVisualizer = () => {
     }
     
     await wait(500);
+    // Recalculate layout for the WHOLE tree
+    const bounds = calculateLayout(newRoot);
+    setTreeBounds(bounds);
     setRoot(newRoot);
+    
     setInputValue('');
     setAnimating(false);
   };
@@ -88,32 +124,34 @@ const BSTVisualizer = () => {
     setActivityLog([]);
     setComplexity(null);
     setInputValue('');
+    setTreeBounds({ minX: 0, maxX: 800, minY: 0, maxY: 600 });
   };
 
   // Tree Rendering Logic
-  const renderTree = (node, x, y, level) => {
+  const renderTree = (node) => {
     if (!node) return null;
-    const gap = 200 / level; 
 
     return (
-      <g key={`node-${node.value}-${x}-${y}`}>
+      <g key={`node-${node.value}-${node.x}-${node.y}`}>
         {node.left && (
-          <line x1={x} y1={y + 20} x2={x - gap} y2={y + 80 - 20} stroke="#cbd5e1" strokeWidth="2" />
+          <line x1={node.x} y1={node.y + 20} x2={node.left.x} y2={node.left.y - 20} stroke="#cbd5e1" strokeWidth="2" />
         )}
         {node.right && (
-          <line x1={x} y1={y + 20} x2={x + gap} y2={y + 80 - 20} stroke="#cbd5e1" strokeWidth="2" />
+          <line x1={node.x} y1={node.y + 20} x2={node.right.x} y2={node.right.y - 20} stroke="#cbd5e1" strokeWidth="2" />
         )}
         
-        <circle cx={x} cy={y} r="20" fill="white" stroke="#6366f1" strokeWidth="3" />
-        <text x={x} y={y} dy=".3em" textAnchor="middle" fontWeight="bold" fontSize="14" fill="#1f2937">
+        <circle cx={node.x} cy={node.y} r="20" fill="white" stroke="#6366f1" strokeWidth="3" />
+        <text x={node.x} y={node.y} dy=".3em" textAnchor="middle" fontWeight="bold" fontSize="14" fill="#1f2937">
           {node.value}
         </text>
 
-        {renderTree(node.left, x - gap, y + 80, level + 0.5)}
-        {renderTree(node.right, x + gap, y + 80, level + 0.5)}
+        {renderTree(node.left)}
+        {renderTree(node.right)}
       </g>
     );
   };
+
+  const viewBox = `${treeBounds.minX} ${treeBounds.minY} ${treeBounds.maxX - treeBounds.minX} ${treeBounds.maxY - treeBounds.minY}`;
 
   return (
     <VisualizerLayout 
@@ -138,8 +176,8 @@ const BSTVisualizer = () => {
       </div>
 
       <div className="tree-canvas">
-        <svg width="100%" height="100%" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
-           {root && renderTree(root, 400, 50, 1.2)}
+        <svg width="100%" height="100%" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
+           {root && renderTree(root)}
            {!root && <text x="400" y="300" textAnchor="middle" fill="#9ca3af" fontSize="18">Empty Tree</text>}
         </svg>
       </div>

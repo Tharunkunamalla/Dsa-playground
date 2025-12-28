@@ -51,7 +51,9 @@
 
 .frame-func {
   font-weight: 700;
-  color: var(--text-main);
+  /* color: var(--text-main); */
+  color: #105fb9;
+  font-family: sans-serif;
 }
 
 .frame-return {
