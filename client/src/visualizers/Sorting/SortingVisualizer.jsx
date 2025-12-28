@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import VisualizerLayout from '../common/VisualizerLayout';
 import GlassDropdown from '../../components/common/GlassDropdown';
 import './Sorting.css';
@@ -12,6 +12,7 @@ const SortingVisualizer = () => {
   const [compareIndices, setCompareIndices] = useState([]);
   const [swapIndices, setSwapIndices] = useState([]);
   const [sortedIndices, setSortedIndices] = useState([]);
+  const isSorting = useRef(false);
   
   const SIZE = 15;
   const SPEED = 200;
@@ -22,6 +23,7 @@ const SortingVisualizer = () => {
 
   const generateArray = () => {
     // Force reset even if animating
+    isSorting.current = false;
     setAnimating(false);
     const newArr = Array.from({ length: SIZE }, () => Math.floor(Math.random() * 50) + 10);
     setArray(newArr);
@@ -37,7 +39,7 @@ const SortingVisualizer = () => {
 
   const runSort = async () => {
     if (animating) return;
-    setAnimating(true);
+    isSorting.current = true;
     
     if (algorithm === 'bubble') await bubbleSort();
     else if (algorithm === 'insertion') await insertionSort();
@@ -45,6 +47,7 @@ const SortingVisualizer = () => {
     else if (algorithm === 'merge') await mergeSort();
     else if (algorithm === 'quick') await quickSort();
     
+    isSorting.current = false;
     setAnimating(false);
   };
 
@@ -58,6 +61,7 @@ const SortingVisualizer = () => {
       for (let j = 0; j < n - i - 1; j++) {
         setCompareIndices([j, j + 1]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         
         if (arr[j] > arr[j + 1]) {
           log(`Swapping ${arr[j]} and ${arr[j+1]}`);
@@ -67,6 +71,7 @@ const SortingVisualizer = () => {
           arr[j + 1] = temp;
           setArray([...arr]);
           await wait(SPEED);
+          if (!isSorting.current) return;
         }
         setSwapIndices([]);
       }
@@ -90,6 +95,7 @@ const SortingVisualizer = () => {
       
       setCompareIndices([i]);
       await wait(SPEED);
+      if (!isSorting.current) return;
 
       while (j >= 0 && arr[j] > key) {
         setCompareIndices([j, j + 1]);
@@ -97,6 +103,7 @@ const SortingVisualizer = () => {
         arr[j + 1] = arr[j];
         setArray([...arr]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         j = j - 1;
       }
       setSwapIndices([]);
@@ -117,6 +124,7 @@ const SortingVisualizer = () => {
       for (let j = i + 1; j < n; j++) {
         setCompareIndices([minIdx, j]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         if (arr[j] < arr[minIdx]) {
           minIdx = j;
         }
@@ -130,6 +138,7 @@ const SortingVisualizer = () => {
         arr[minIdx] = temp;
         setArray([...arr]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         setSwapIndices([]);
       }
       setSortedIndices(prev => [...prev, i]);
@@ -153,18 +162,21 @@ const SortingVisualizer = () => {
       while (i < left.length && j < right.length) {
         setCompareIndices([start + i, mid + 1 + j]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         
         if (left[i] <= right[j]) {
           arr[k] = left[i];
           setSwapIndices([k]);
           setArray([...arr]);
           await wait(SPEED);
+          if (!isSorting.current) return;
           i++;
         } else {
           arr[k] = right[j];
           setSwapIndices([k]);
           setArray([...arr]);
           await wait(SPEED);
+          if (!isSorting.current) return;
           j++;
         }
         k++;
@@ -176,6 +188,7 @@ const SortingVisualizer = () => {
         arr[k] = left[i];
         setArray([...arr]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         setSwapIndices([]);
         i++; k++;
       }
@@ -184,6 +197,7 @@ const SortingVisualizer = () => {
         arr[k] = right[j];
         setArray([...arr]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         setSwapIndices([]);
         j++; k++;
       }
@@ -193,7 +207,9 @@ const SortingVisualizer = () => {
       if (start >= end) return;
       let mid = Math.floor((start + end) / 2);
       await mergeSortHelper(start, mid);
+      if (!isSorting.current) return;
       await mergeSortHelper(mid + 1, end);
+      if (!isSorting.current) return;
       await merge(start, mid, end);
     };
 
@@ -217,6 +233,7 @@ const SortingVisualizer = () => {
       for (let j = low; j < high; j++) {
         setCompareIndices([j, high]);
         await wait(SPEED);
+        if (!isSorting.current) return;
         
         if (arr[j] < pivot) {
           i++;
@@ -225,6 +242,7 @@ const SortingVisualizer = () => {
           arr[j] = temp;
           setArray([...arr]);
           await wait(SPEED);
+          if (!isSorting.current) return;
         }
       }
       
@@ -234,13 +252,16 @@ const SortingVisualizer = () => {
       setArray([...arr]);
       setSwapIndices([]);
       await wait(SPEED);
+      if (!isSorting.current) return -1;
       return i + 1;
     };
 
     const quickSortHelper = async (low, high) => {
       if (low < high) {
         let pi = await partition(low, high);
+        if (!isSorting.current) return;
         await quickSortHelper(low, pi - 1);
+        if (!isSorting.current) return;
         await quickSortHelper(pi + 1, high);
       }
     };
