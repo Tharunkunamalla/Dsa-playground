@@ -10,11 +10,13 @@ const Whiteboard = () => {
   const [activeTab, setActiveTab] = useState('draw'); // 'draw' or 'write'
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
+  const clickTimeoutRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#ffffff');
   const [brushSize, setBrushSize] = useState(5);
   const [isEraser, setIsEraser] = useState(false);
   const [notes, setNotes] = useState('');
+  const [entryTitle, setEntryTitle] = useState('');
   
   const [historyOpen, setHistoryOpen] = useState(false);
   const [savedItems, setSavedItems] = useState([]);
@@ -45,10 +47,23 @@ const Whiteboard = () => {
     }
   }, [historyOpen, user]);
 
-  const saveWork = async () => {
+  const performSave = async (forceDefault = false) => {
     if (!user) {
       toast.error('Please login to save your work');
       return;
+    }
+
+    // Single click without title check
+    if (!forceDefault && !entryTitle.trim()) {
+        toast('Please enter a name.\nDouble-click to save with default name.', {
+            icon: 'ℹ️',
+            style: {
+                borderRadius: '10px',
+                background: '#333',
+                color: '#fff',
+            },
+        });
+        return;
     }
 
     try {
@@ -63,14 +78,19 @@ const Whiteboard = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       let payload = {};
+      const defaultTitle = activeTab === 'draw' 
+        ? `Drawing - ${new Date().toLocaleString()}`
+        : `Note - ${new Date().toLocaleString()}`;
+
+      const finalTitle = entryTitle.trim() || defaultTitle; // If forceDefault is true, entryTitle might be empty, so use default.
       
       if (activeTab === 'draw') {
         const canvas = canvasRef.current;
         if (!canvas) return;
         payload = {
           type: 'drawing',
-          content: canvas.toDataURL(), // Save as Base64
-          title: `Drawing - ${new Date().toLocaleString()}`
+          content: canvas.toDataURL(),
+          title: finalTitle
         };
       } else {
         if (!notes.trim()) {
@@ -81,12 +101,13 @@ const Whiteboard = () => {
         payload = {
           type: 'note',
           content: notes,
-          title: `Note - ${new Date().toLocaleString()}`
+          title: finalTitle
         };
       }
 
       await axios.post('http://localhost:5000/api/creative/save', payload, config);
       toast.success('Saved successfully!');
+      setEntryTitle(''); // Reset title after save
       if (historyOpen) fetchHistory(); // Refresh list if open
     } catch (error) {
       console.error('Save error:', error);
@@ -94,6 +115,25 @@ const Whiteboard = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSaveClick = () => {
+    if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
+    }
+
+    clickTimeoutRef.current = setTimeout(() => {
+        performSave(false);
+    }, 250);
+  };
+
+  const handleSaveDoubleClick = () => {
+    if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+        clickTimeoutRef.current = null;
+    }
+    performSave(true);
   };
 
   const loadItem = (item) => {
@@ -254,7 +294,22 @@ const Whiteboard = () => {
           </button>
         </div>
         <div className="action-controls">
-            <button className="action-btn save-btn" onClick={saveWork} disabled={isLoading}>
+            <div className="title-input-wrapper">
+                <input 
+                    type="text" 
+                    placeholder="Enter file name..." 
+                    value={entryTitle}
+                    onChange={(e) => setEntryTitle(e.target.value)}
+                    className="title-input"
+                />
+            </div>
+            <button 
+                className="action-btn save-btn" 
+                onClick={handleSaveClick}
+                onDoubleClick={handleSaveDoubleClick}
+                disabled={isLoading}
+                title="Click to save with name, Double-click to auto-name"
+            >
                 <FaSave /> {isLoading ? 'Saving...' : 'Save'}
             </button>
             <button className={`action-btn history-btn ${historyOpen ? 'active' : ''}`} onClick={() => setHistoryOpen(!historyOpen)}>

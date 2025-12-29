@@ -149,6 +149,33 @@
 .action-controls {
     display: flex;
     gap: 1rem;
+    align-items: center;
+}
+
+.title-input-wrapper {
+    position: relative;
+}
+
+.title-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    color: white;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+    width: 200px;
+}
+
+.title-input:focus {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.title-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
 }
 
 .action-btn {
