@@ -1,0 +1,350 @@
+import { useState, useRef, useEffect } from 'react';
+import { FaPen, FaEraser, FaTrash, FaSave, FaStickyNote, FaHistory, FaTimes } from 'react-icons/fa';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import './Whiteboard.css';
+
+const Whiteboard = () => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('draw'); // 'draw' or 'write'
+  const canvasRef = useRef(null);
+  const contextRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [color, setColor] = useState('#ffffff');
+  const [brushSize, setBrushSize] = useState(5);
+  const [isEraser, setIsEraser] = useState(false);
+  const [notes, setNotes] = useState('');
+  
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [savedItems, setSavedItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch history
+  const fetchHistory = async () => {
+    try {
+      if (!user) return;
+      
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      const token = userInfo ? userInfo.token : null;
+      if (!token) return;
+
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      
+      const res = await axios.get('http://localhost:5000/api/creative/list', config);
+      setSavedItems(res.data);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      toast.error('Failed to load history');
+    }
+  };
+
+  useEffect(() => {
+    if (historyOpen) {
+      fetchHistory();
+    }
+  }, [historyOpen, user]);
+
+  const saveWork = async () => {
+    if (!user) {
+      toast.error('Please login to save your work');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      const token = userInfo ? userInfo.token : null;
+      if (!token) {
+        toast.error('Authentication error. Please login again.');
+        return;
+      }
+
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      
+      let payload = {};
+      
+      if (activeTab === 'draw') {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        payload = {
+          type: 'drawing',
+          content: canvas.toDataURL(), // Save as Base64
+          title: `Drawing - ${new Date().toLocaleString()}`
+        };
+      } else {
+        if (!notes.trim()) {
+           toast.error('Cannot save empty note');
+           setIsLoading(false);
+           return;
+        }
+        payload = {
+          type: 'note',
+          content: notes,
+          title: `Note - ${new Date().toLocaleString()}`
+        };
+      }
+
+      await axios.post('http://localhost:5000/api/creative/save', payload, config);
+      toast.success('Saved successfully!');
+      if (historyOpen) fetchHistory(); // Refresh list if open
+    } catch (error) {
+      console.error('Save error:', error);
+      toast.error('Failed to save');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadItem = (item) => {
+    if (item.type === 'drawing') {
+      setActiveTab('draw');
+      // We need to wait for the canvas to render if it wasn't active
+      setTimeout(() => {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          img.onload = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio); // Adjust for DPR if needed, or just 0,0,width,height
+          };
+          img.src = item.content;
+        }
+      }, 100);
+    } else {
+      setActiveTab('write');
+      setNotes(item.content);
+    }
+    toast.success(`Loaded ${item.type}`);
+  };
+
+  const deleteItem = async (e, id) => {
+    e.stopPropagation();
+    if(!window.confirm("Are you sure you want to delete this item?")) return;
+
+    try {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo ? userInfo.token : null;
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        await axios.delete(`http://localhost:5000/api/creative/${id}`, config);
+        toast.success("Deleted successfully");
+        fetchHistory();
+    } catch (error) {
+        toast.error("Failed to delete");
+    }
+  };
+
+  // Setup Canvas
+
+  // Setup Canvas
+  useEffect(() => {
+    if (activeTab === 'draw') {
+      const canvas = canvasRef.current;
+      // Handle high DPI displays
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr; // Make it fit the container
+      
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = brushSize;
+      contextRef.current = ctx;
+      
+      // Prevent scrolling when touching canvas
+      canvas.style.touchAction = "none";
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (contextRef.current) {
+        if (isEraser) {
+            contextRef.current.globalCompositeOperation = 'destination-out';
+            contextRef.current.lineWidth = brushSize * 2; // Eraser is bigger
+        } else {
+            contextRef.current.globalCompositeOperation = 'source-over';
+            contextRef.current.strokeStyle = color;
+            contextRef.current.lineWidth = brushSize;
+        }
+    }
+  }, [color, brushSize, isEraser]);
+
+  const getCoordinates = (event) => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    
+    // Calculate position relative to canvas
+    const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+    
+    // If using dpr scaling at context level, we might need to adjust logic. 
+    // However, since we stored the context with scale(dpr,dpr), logical coordinates (0 to rect.width) mapped to Physical (0 to rect.width*dpr).
+    // The event.clientX - rect.left gives logical coordinates relative to viewport.
+    // So simple logical coordinates are enough if context is scaled.
+    
+    // BUT we manually set width/height with dpr. 
+    // width = rect.width * dpr.
+    // context.scale(dpr, dpr).
+    // So if we draw at (10, 10), it draws at physical (10*dpr, 10*dpr).
+    // event.clientX - rect.left = 10. 
+    
+    return { 
+        x: (event.clientX - rect.left), // Logical coordinates 
+        y: (event.clientY - rect.top) 
+    };
+  };
+
+  const startDrawing = (e) => {
+    // Prevent default to avoid scrolling on touch devices
+    // e.preventDefault(); // Don't prevent default on mouse events indiscriminately
+    
+    const { x, y } = getCoordinates(e);
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const finishDrawing = () => {
+    contextRef.current.closePath();
+    
+    // If I was using destination-out, it clears alpha. 
+    // But since my background is CSS-only (#1a1a2e), clearing alpha reveals transparent (which shows the CSS background).
+    // Wait, canvas save to DataURL will save transparency. 
+    // When loading back, drawing a transparent image on a canvas with NO background fill will keep it transparent.
+    // And CSS shows through. This is correct behavior!
+    
+    setIsDrawing(false);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    const { x, y } = getCoordinates(e);
+    contextRef.current.lineTo(x, y);
+    contextRef.current.stroke();
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  return (
+    <div className="whiteboard-container animate-fade-in">
+      <div className="whiteboard-header">
+        <h1>Creative Space</h1>
+        <div className="tab-controls">
+          <button 
+            className={`tab-btn ${activeTab === 'draw' ? 'active' : ''}`}
+            onClick={() => setActiveTab('draw')}
+          >
+            <FaPen /> Drawing
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'write' ? 'active' : ''}`}
+            onClick={() => setActiveTab('write')}
+          >
+            <FaStickyNote /> Notes
+          </button>
+        </div>
+        <div className="action-controls">
+            <button className="action-btn save-btn" onClick={saveWork} disabled={isLoading}>
+                <FaSave /> {isLoading ? 'Saving...' : 'Save'}
+            </button>
+            <button className={`action-btn history-btn ${historyOpen ? 'active' : ''}`} onClick={() => setHistoryOpen(!historyOpen)}>
+                <FaHistory /> History
+            </button>
+        </div>
+      </div>
+
+      <div className="main-content-wrapper">
+         {/* History Sidebar */}
+         <div className={`history-sidebar glass-card ${historyOpen ? 'open' : ''}`}>
+            <div className="history-header">
+                <h3>Saved Work</h3>
+                <button onClick={() => setHistoryOpen(false)}><FaTimes /></button>
+            </div>
+            <div className="history-list">
+                {savedItems.length === 0 ? (
+                    <p className="empty-msg">No saved items found.</p>
+                ) : (
+                    savedItems.map(item => (
+                        <div key={item._id} className="history-item" onClick={() => loadItem(item)}>
+                            <div className="item-icon">
+                                {item.type === 'drawing' ? <FaPen /> : <FaStickyNote />}
+                            </div>
+                            <div className="item-info">
+                                <span className="item-title">{item.title}</span>
+                                <span className="item-date">{new Date(item.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <button className="delete-btn" onClick={(e) => deleteItem(e, item._id)}>
+                                <FaTrash />
+                            </button>
+                        </div>
+                    ))
+                )}
+            </div>
+         </div>
+
+      <div className="whiteboard-content glass-card">
+        {activeTab === 'draw' ? (
+          <div className="draw-area">
+            <div className="toolbar">
+              <input 
+                type="color" 
+                value={color} 
+                onChange={(e) => setColor(e.target.value)}
+                title="Color Picker"
+              />
+              <input 
+                type="range" 
+                min="1" 
+                max="20" 
+                value={brushSize} 
+                onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                title="Brush Size"
+              />
+              <button 
+                onClick={() => setIsEraser(!isEraser)} 
+                title="Eraser"
+                className={isEraser ? 'active-tool' : ''}
+                style={{ background: isEraser ? 'rgba(99, 102, 241, 0.5)' : '' }}
+              >
+                <FaEraser />
+              </button>
+              <button onClick={clearCanvas} title="Clear All">
+                <FaTrash />
+              </button>
+            </div>
+            <canvas
+              ref={canvasRef}
+              onMouseDown={startDrawing}
+              onMouseUp={finishDrawing}
+              onMouseMove={draw}
+              onMouseLeave={finishDrawing}
+              className="drawing-canvas"
+            />
+          </div>
+        ) : (
+          <div className="write-area">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Start typing your ideas here..."
+              className="notes-textarea"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+    </div>
+  );
+};
+
+export default Whiteboard;

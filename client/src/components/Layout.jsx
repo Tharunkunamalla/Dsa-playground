@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaBars, FaTimes, FaHome, FaCode, FaLayerGroup, FaSignOutAlt, FaMoon, FaSun, FaUserCircle } from 'react-icons/fa';
+import { FaBars, FaTimes, FaHome, FaCode, FaLayerGroup, FaSignOutAlt, FaMoon, FaSun, FaUserCircle, FaPen } from 'react-icons/fa';
 import './Layout.css';
 import AnimatedBackground from './common/AnimatedBackground';
 
@@ -44,6 +44,7 @@ const Layout = () => {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <FaHome /> },
     { name: 'Striver Sheet', path: '/striver', icon: <FaCode /> },
+    { name: 'Creative Space', path: '/whiteboard', icon: <FaPen /> },
     { name: 'Visualizer Info', path: '/visualizer/info', icon: <FaLayerGroup /> }, // Placeholder generic link
   ];
 

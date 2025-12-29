@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
 import Auth from './pages/Auth';
 import StriverSheet from './pages/StriverSheet';
+import Whiteboard from './pages/Whiteboard';
 import VisualizerManager from './visualizers/VisualizerManager';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -23,6 +24,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <StriverSheet />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="whiteboard" 
+              element={
+                <ProtectedRoute>
+                  <Whiteboard />
                 </ProtectedRoute>
               } 
             />

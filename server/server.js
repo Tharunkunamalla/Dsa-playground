@@ -26,6 +26,9 @@ app.get('/', (req, res) => {
 // User Routes
 app.use('/api/auth', authRoutes);
 
+import creativeRoutes from './routes/creative.js';
+app.use('/api/creative', creativeRoutes);
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
