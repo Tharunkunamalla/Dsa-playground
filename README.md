@@ -1,4 +1,4 @@
-# DSA Playground 🚀
+# <img src="client/src/assets/logo1.png" alt="Logo" width="50" height="50" style="vertical-align: middle;"/> DSA Playground 🚀
 
 A comprehensive Data Structures and Algorithms visualization platform with interactive visualizers for learning and practicing DSA concepts. This project combines a modern React frontend with a robust Express backend to provide an engaging learning experience.
 
