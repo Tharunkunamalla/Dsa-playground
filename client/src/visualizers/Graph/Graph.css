@@ -13,7 +13,75 @@
   cursor: pointer;
 }
 
-.node-circle:hover {
-  stroke: #6366f1;
-  stroke-width: 3px;
+/* Custom Glass Dropdown */
+.custom-dropdown {
+    position: relative;
+    width: 200px;
+    margin-right: 15px;
+    font-family: inherit;
+    z-index: 10;
+}
+
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.dropdown-trigger:hover, .dropdown-trigger.open {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.dropdown-icon {
+    font-size: 0.8em;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-trigger.open .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.dropdown-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: rgba(30, 41, 59, 0.85); /* Darker glass for better text readability */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    padding: 0.5rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dropdown-item {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(99, 102, 241, 0.4); /* Primary color low opacity */
+    color: white;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
 }

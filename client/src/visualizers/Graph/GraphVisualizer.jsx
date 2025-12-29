@@ -1,27 +1,78 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { FaChevronDown } from 'react-icons/fa';
 import VisualizerLayout from '../common/VisualizerLayout';
 import './Graph.css';
 
 const GraphVisualizer = () => {
   // Pre-defined graph structure for MVP
-  const initialNodes = [
-    { id: 0, x: 100, y: 100, value: 'A' },
-    { id: 1, x: 300, y: 100, value: 'B' },
-    { id: 2, x: 500, y: 100, value: 'C' },
-    { id: 3, x: 200, y: 300, value: 'D' },
-    { id: 4, x: 400, y: 300, value: 'E' },
-  ];
+  const graphPresets = {
+    default: {
+        nodes: [
+            { id: 0, x: 100, y: 100, value: 'A' },
+            { id: 1, x: 300, y: 100, value: 'B' },
+            { id: 2, x: 500, y: 100, value: 'C' },
+            { id: 3, x: 200, y: 300, value: 'D' },
+            { id: 4, x: 400, y: 300, value: 'E' },
+        ],
+        edges: [
+            { source: 0, target: 1 }, { source: 0, target: 3 },
+            { source: 1, target: 2 }, { source: 1, target: 4 }, { source: 1, target: 3 },
+            { source: 2, target: 4 },
+        ]
+    },
+    star: {
+        nodes: [
+            { id: 0, x: 300, y: 200, value: '0' },
+            { id: 1, x: 300, y: 50, value: '1' },
+            { id: 2, x: 500, y: 150, value: '2' },
+            { id: 3, x: 450, y: 350, value: '3' },
+            { id: 4, x: 150, y: 350, value: '4' },
+            { id: 5, x: 100, y: 150, value: '5' },
+        ],
+        edges: [
+            { source: 0, target: 1 }, { source: 0, target: 2 },
+            { source: 0, target: 3 }, { source: 0, target: 4 },
+            { source: 0, target: 5 },
+        ]
+    },
+    cycle: {
+        nodes: [
+            { id: 0, x: 100, y: 200, value: 'A' },
+            { id: 1, x: 200, y: 100, value: 'B' },
+            { id: 2, x: 400, y: 100, value: 'C' },
+            { id: 3, x: 500, y: 200, value: 'D' },
+            { id: 4, x: 400, y: 300, value: 'E' },
+            { id: 5, x: 200, y: 300, value: 'F' },
+        ],
+        edges: [
+            { source: 0, target: 1 }, { source: 1, target: 2 },
+            { source: 2, target: 3 }, { source: 3, target: 4 },
+            { source: 4, target: 5 }, { source: 5, target: 0 },
+            { source: 1, target: 5 }, // Cross edge
+        ]
+    }
+  };
 
-  const initialEdges = [
-    { source: 0, target: 1 },
-    { source: 0, target: 3 },
-    { source: 1, target: 2 },
-    { source: 1, target: 4 },
-    { source: 1, target: 3 },
-    { source: 2, target: 4 },
-  ];
+  const [currentGraph, setCurrentGraph] = useState('default');
+  const [nodes, setNodes] = useState(graphPresets.default.nodes);
+  const [edges, setEdges] = useState(graphPresets.default.edges);
 
-  const [nodes, setNodes] = useState(initialNodes);
+  // Dropdown state
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+
+
   const [visited, setVisited] = useState(new Set());
   const [current, setCurrent] = useState(null);
   const [queue, setQueue] = useState([]);
@@ -41,7 +92,7 @@ const GraphVisualizer = () => {
     const q = [startNode];
     const seen = new Set([startNode]);
     
-    setLog(prev => [`Starting BFS from Node ${initialNodes[startNode].value}`]);
+    setLog(prev => [`Starting BFS from Node ${nodes[startNode].value}`]);
     setVisited(new Set([startNode]));
     setQueue([startNode]);
     
@@ -52,14 +103,14 @@ const GraphVisualizer = () => {
       setCurrent(currId);
       setQueue([...q]);
       
-      setLog(prev => [`Visiting Node ${initialNodes[currId].value}`, ...prev]);
+      setLog(prev => [`Visiting Node ${nodes.find(n => n.id === currId)?.value}`, ...prev]);
       await wait(1000);
 
       // Get neighbors
-      const neighbors = initialEdges
+      const neighbors = edges
         .filter(e => e.source === currId || e.target === currId)
         .map(e => e.source === currId ? e.target : e.source)
-        .sort((a,b) => a - b); // consistent order
+        .sort((a,b) => a - b); 
 
       for (const neighborId of neighbors) {
         if (!seen.has(neighborId)) {
@@ -67,7 +118,7 @@ const GraphVisualizer = () => {
           q.push(neighborId);
           setVisited(new Set(seen));
           setQueue([...q]);
-          setLog(prev => [`Queueing Node ${initialNodes[neighborId].value}`, ...prev]);
+          setLog(prev => [`Queueing Node ${nodes.find(n => n.id === neighborId)?.value}`, ...prev]);
           await wait(800);
         }
       }
@@ -76,6 +127,59 @@ const GraphVisualizer = () => {
     setCurrent(null);
     setLog(prev => ['BFS Completed', ...prev]);
     setAnimating(false);
+  };
+
+  const runDFS = async () => {
+    if (animating) return;
+    setAnimating(true);
+    setVisited(new Set());
+    setLog([]);
+    setQueue([]); // Uses queue UI for Stack visualization if needed, or we rename it
+    
+    const startNode = 0;
+    const stack = [startNode];
+    const seen = new Set(); // DFS marks as visited when POPPED usually, or pushed. 
+    // Standard iterative DFS:
+    
+    setLog(prev => [`Starting DFS from Node ${nodes[startNode].value}`]);
+    
+    while (stack.length > 0) {
+        const currId = stack.pop();
+        
+        if (!seen.has(currId)) {
+            seen.add(currId);
+            setVisited(new Set(seen));
+            setCurrent(currId);
+            setLog(prev => [`Visiting Node ${nodes.find(n => n.id === currId)?.value}`, ...prev]);
+            await wait(1000);
+
+            // Get neighbors
+            const neighbors = edges
+              .filter(e => e.source === currId || e.target === currId)
+              .map(e => e.source === currId ? e.target : e.source)
+              .sort((a,b) => b - a); // Reverse sort for stack to process smaller index first
+
+            for (const neighborId of neighbors) {
+                if (!seen.has(neighborId)) {
+                    stack.push(neighborId);
+                    setLog(prev => [`Pushing Node ${nodes.find(n => n.id === neighborId)?.value} to stack`, ...prev]);
+                }
+            }
+        }
+        await wait(500);
+    }
+
+    setCurrent(null);
+    setLog(prev => ['DFS Completed', ...prev]);
+    setAnimating(false);
+  };
+
+  const changeGraph = (type) => {
+    if (animating) return;
+    setCurrentGraph(type);
+    setNodes(graphPresets[type].nodes);
+    setEdges(graphPresets[type].edges);
+    reset();
   };
 
   const reset = () => {
@@ -98,13 +202,39 @@ const GraphVisualizer = () => {
       onReset={reset}
     >
       <div className="controls-group">
-        <button onClick={runBFS} disabled={animating} className="control-btn primary">Start BFS</button>
+        <div className="custom-dropdown" ref={dropdownRef}>
+            <div 
+                className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''}`} 
+                onClick={() => !animating && setIsDropdownOpen(!isDropdownOpen)}
+            >
+                <span>{currentGraph.charAt(0).toUpperCase() + currentGraph.slice(1)} Graph</span>
+                <FaChevronDown className="dropdown-icon" />
+            </div>
+            {isDropdownOpen && (
+                <div className="dropdown-options">
+                    <div className="dropdown-item" onClick={() => { changeGraph('default'); setIsDropdownOpen(false); }}>
+                        Default Graph
+                    </div>
+                    <div className="dropdown-item" onClick={() => { changeGraph('star'); setIsDropdownOpen(false); }}>
+                        Star Graph
+                    </div>
+                    <div className="dropdown-item" onClick={() => { changeGraph('cycle'); setIsDropdownOpen(false); }}>
+                        Cycle Graph
+                    </div>
+                </div>
+            )}
+        </div>
+
+        <div className="btn-group">
+            <button onClick={runBFS} disabled={animating} className="control-btn primary">Start BFS</button>
+            <button onClick={runDFS} disabled={animating} className="control-btn secondary">Start DFS</button>
+        </div>
       </div>
 
       <div className="graph-canvas">
         <svg width="100%" height="100%" viewBox="0 0 600 400">
            {/* Edges */}
-             {initialEdges.map((edge, idx) => {
+             {edges.map((edge, idx) => {
                const start = nodes.find(n => n.id === edge.source);
                const end = nodes.find(n => n.id === edge.target);
                if (!start || !end) return null; // Safe guard
