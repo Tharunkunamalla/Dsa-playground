@@ -58,7 +58,7 @@ const Layout = () => {
             <FaBars />
           </button>
           <Link to="/" className="brand-logo-nav">
-            DSA Play
+            <span className="gradient-text">DSA Play</span>
           </Link>
         </div>
 
