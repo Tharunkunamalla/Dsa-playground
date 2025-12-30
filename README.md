@@ -12,6 +12,15 @@ A comprehensive Data Structures and Algorithms visualization platform with inter
   - Linked Lists (Single & Doubly)
   - Recursion
   
+- **Creative Space (Whiteboard)**: Digital canvas for learning and note-taking
+  - Drawing mode with customizable colors and brush sizes
+  - Note-taking mode with rich text editor
+  - Save and load functionality for drawings and notes
+  - History sidebar to manage and organize saved work
+  - Eraser tool for corrections
+
+- **Dark/Light Mode**: Theme toggle for comfortable viewing experience
+
 - **User Authentication**: Secure login/signup system with JWT authentication
 - **Striver's SDE Sheet**: Integrated problem-solving tracker
 - **Responsive Design**: Works seamlessly across different devices
@@ -25,6 +34,7 @@ A comprehensive Data Structures and Algorithms visualization platform with inter
 - **React Router** - Client-side routing
 - **Axios** - HTTP client
 - **React Icons** - Icon library
+- **React Hot Toast** - Toast notifications
 
 ### Backend
 - **Node.js** - Runtime environment
@@ -161,6 +171,20 @@ Dsa-playground/
 6. **Linked Lists** - Singly linked list operations
 7. **Doubly Linked Lists** - DLL operations
 8. **Recursion** - Recursive algorithm visualization
+
+## 🎨 Additional Features
+
+### Creative Space (Whiteboard)
+A dedicated workspace for brainstorming and note-taking:
+- **Drawing Canvas**: Freehand drawing with color picker and adjustable brush sizes
+- **Notes Editor**: Write and organize your thoughts and problem-solving notes
+- **Save & Load**: Persist your work with custom titles for easy retrieval
+- **History Management**: Access previously saved drawings and notes
+- **Dual Mode**: Switch seamlessly between drawing and note-taking
+
+### Theme Customization
+- Toggle between light and dark modes for comfortable viewing
+- Theme preference saved across sessions
 
 ## 🧪 Testing
 
