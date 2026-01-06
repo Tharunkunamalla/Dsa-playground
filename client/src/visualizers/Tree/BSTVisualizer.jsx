@@ -235,6 +235,7 @@ const BSTVisualizer = () => {
           viewBox={viewBox} 
           preserveAspectRatio="xMidYMid meet"
         >
+          
            {root && renderTree(root)}
            {!root && <text x="400" y="300" textAnchor="middle" fill="#9ca3af" fontSize="18">Empty Tree</text>}
         </svg>
