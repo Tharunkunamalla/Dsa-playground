@@ -9,6 +9,7 @@ class TreeNode {
     this.right = null;
     this.x = 0;
     this.y = 0;
+    this.id = `node-${Date.now()}-${Math.random()}`;
   }
 }
 
@@ -19,45 +20,80 @@ const BSTVisualizer = () => {
   const [complexity, setComplexity] = useState(null);
   const [animating, setAnimating] = useState(false);
   
-  // State for SVG ViewBox
-  const [treeBounds, setTreeBounds] = useState({ minX: 0, maxX: 800, minY: 0, maxY: 600 });
+  // State for SVG ViewBox / Canvas Size
+  // We use scrollable canvas, so we need exact dimensions
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [viewBox, setViewBox] = useState('0 0 800 600');
 
   const log = (msg) => setActivityLog(prev => [msg, ...prev]);
   const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Helper to Calculate Node Positions and Bounds
+  // Improved Layout: Inorder Traversal for X, Depth for Y
   const calculateLayout = (node) => {
-    if (!node) return { minX: 0, maxX: 800, minY: 0, maxY: 600 };
+    if (!node) return { width: 800, height: 600, minX: 0, minY: 0 };
+
+    let counter = 0;
+    const horizontalSpacing = 60;
+    const verticalSpacing = 80;
+    const startY = 60;
 
     let minX = Infinity;
     let maxX = -Infinity;
-    let minY = 0; // Root always at 50 (ignoring padding for calc)
     let maxY = 0;
 
-    const traverse = (n, x, y, level) => {
+    // First pass: Assign coordinates based on inorder index
+    const traverse = (n, depth) => {
       if (!n) return;
+      traverse(n.left, depth + 1);
       
-      n.x = x;
-      n.y = y;
+      n.x = (counter++) * horizontalSpacing;
+      n.y = startY + (depth * verticalSpacing);
       
-      minX = Math.min(minX, x);
-      maxX = Math.max(maxX, x);
-      maxY = Math.max(maxY, y);
+      minX = Math.min(minX, n.x);
+      maxX = Math.max(maxX, n.x);
+      maxY = Math.max(maxY, n.y);
 
-      const gap = 200 / (level * 1.2); // Reduces gap as we go deeper
-      traverse(n.left, x - gap, y + 80, level + 1);
-      traverse(n.right, x + gap, y + 80, level + 1);
+      traverse(n.right, depth + 1);
     };
 
-    traverse(node, 400, 50, 1);
-    
-    // Add some padding
+    traverse(node, 0);
+
+    // Add padding
+    const paddingX = 100;
+    const paddingY = 100;
+
+    // Shift all nodes so minX aligns with padding
+    // We want the leftmost node to be at paddingX
+    const shiftX = paddingX - minX;
+
+    const shiftNodes = (n) => {
+      if (!n) return;
+      n.x += shiftX;
+      shiftNodes(n.left);
+      shiftNodes(n.right);
+    };
+    shiftNodes(node);
+
+    // Recalculate bounds after shift
+    const finalMinX = paddingX; // By definition
+    const finalMaxX = maxX + shiftX;
+    const finalWidth = Math.max(800, finalMaxX + paddingX); // Ensure at least 800
+    const finalHeight = Math.max(600, maxY + paddingY);
+
     return {
-      minX: minX - 50,
-      maxX: maxX + 50,
-      minY: minY - 50,
-      maxY: maxY + 100 // More padding at bottom
+      width: finalWidth,
+      height: finalHeight,
+      minX: 0,
+      minY: 0
     };
+  };
+
+  const cloneTree = (node) => {
+    if (!node) return null;
+    const newNode = { ...node };
+    newNode.left = cloneTree(node.left);
+    newNode.right = cloneTree(node.right);
+    return newNode;
   };
 
   const insert = async () => {
@@ -69,33 +105,45 @@ const BSTVisualizer = () => {
 
     if (!root) {
       const newRoot = new TreeNode(val);
-      newRoot.x = 400;
-      newRoot.y = 50;
+      // Layout calculation will position it correctly
+      const layout = calculateLayout(newRoot);
+      setCanvasSize({ width: layout.width, height: layout.height });
+      setViewBox(`0 0 ${layout.width} ${layout.height}`);
+      
       setRoot(newRoot);
-      setTreeBounds(calculateLayout(newRoot));
       log(`Root created: ${val}`);
       setInputValue('');
       setAnimating(false);
       return;
     }
 
-    // Clone tree
-    // We need a proper deep clone to modify safe properties
-    // For this simple structure, JSON parse/stringify is "ok" but loses class methods if any
-    // Let's rebuild the structure with traverse to be safer or just use the JSON hack for MVP data
-    const newRoot = JSON.parse(JSON.stringify(root));
+    const newRoot = cloneTree(root);
 
     const insertObj = (node, value) => {
       if (value === node.value) return false;
       if (value < node.value) {
          if (!node.left) {
-           node.left = { value, left: null, right: null, x: 0, y: 0 };
+           node.left = { 
+             value, 
+             left: null, 
+             right: null, 
+             x: node.x - 50, // Temp pos
+             y: node.y + 50, // Temp pos
+             id: `node-${Date.now()}-${Math.random()}` 
+           };
            return true; 
          }
          return insertObj(node.left, value);
       } else {
          if (!node.right) {
-           node.right = { value, left: null, right: null, x: 0, y: 0 };
+           node.right = { 
+             value, 
+             left: null, 
+             right: null, 
+             x: node.x + 50, // Temp pos
+             y: node.y + 50, // Temp pos
+             id: `node-${Date.now()}-${Math.random()}` 
+           };
            return true;
          }
          return insertObj(node.right, value);
@@ -109,12 +157,17 @@ const BSTVisualizer = () => {
       return; 
     }
     
-    await wait(500);
-    // Recalculate layout for the WHOLE tree
-    const bounds = calculateLayout(newRoot);
-    setTreeBounds(bounds);
-    setRoot(newRoot);
+    // Temporarily set root to show new node appearing at temp position (optional, skipping for speed)
+    // await wait(100); 
+
+    // Recalculate layout for perfect positioning
+    await wait(300); // Small delay to visualize insertion before layout snap? Or immediate? 
+    // Let's do immediate layout update for now to be safe, transition handles the move
+    const layout = calculateLayout(newRoot);
+    setCanvasSize({ width: layout.width, height: layout.height });
+    setViewBox(`0 0 ${layout.width} ${layout.height}`);
     
+    setRoot(newRoot);
     setInputValue('');
     setAnimating(false);
   };
@@ -124,20 +177,22 @@ const BSTVisualizer = () => {
     setActivityLog([]);
     setComplexity(null);
     setInputValue('');
-    setTreeBounds({ minX: 0, maxX: 800, minY: 0, maxY: 600 });
+    setCanvasSize({ width: 800, height: 600 });
+    setViewBox('0 0 800 600');
   };
 
   // Tree Rendering Logic
   const renderTree = (node) => {
     if (!node) return null;
 
+    // Use node.id for key to ensure stable identity and correct updates
     return (
-      <g key={`node-${node.value}-${node.x}-${node.y}`}>
+      <g key={node.id}>
         {node.left && (
-          <line x1={node.x} y1={node.y + 20} x2={node.left.x} y2={node.left.y - 20} stroke="#cbd5e1" strokeWidth="2" />
+          <line x1={node.x} y1={node.y} x2={node.left.x} y2={node.left.y} stroke="#cbd5e1" strokeWidth="2" />
         )}
         {node.right && (
-          <line x1={node.x} y1={node.y + 20} x2={node.right.x} y2={node.right.y - 20} stroke="#cbd5e1" strokeWidth="2" />
+          <line x1={node.x} y1={node.y} x2={node.right.x} y2={node.right.y} stroke="#cbd5e1" strokeWidth="2" />
         )}
         
         <circle cx={node.x} cy={node.y} r="20" fill="white" stroke="#6366f1" strokeWidth="3" />
@@ -150,8 +205,6 @@ const BSTVisualizer = () => {
       </g>
     );
   };
-
-  const viewBox = `${treeBounds.minX} ${treeBounds.minY} ${treeBounds.maxX - treeBounds.minX} ${treeBounds.maxY - treeBounds.minY}`;
 
   return (
     <VisualizerLayout 
@@ -176,7 +229,12 @@ const BSTVisualizer = () => {
       </div>
 
       <div className="tree-canvas">
-        <svg width="100%" height="100%" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
+        <svg 
+          width="100%" 
+          height="100%" 
+          viewBox={viewBox} 
+          preserveAspectRatio="xMidYMid meet"
+        >
            {root && renderTree(root)}
            {!root && <text x="400" y="300" textAnchor="middle" fill="#9ca3af" fontSize="18">Empty Tree</text>}
         </svg>
@@ -184,5 +242,6 @@ const BSTVisualizer = () => {
     </VisualizerLayout>
   );
 };
-
+  
 export default BSTVisualizer;
+
