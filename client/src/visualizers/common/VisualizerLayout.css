@@ -1,5 +1,5 @@
 .viz-container {
-  height: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -51,7 +51,8 @@
   gap: 20px;
   flex: 1;
   min-height: 0;
-  overflow: hidden; /* Prevent grid itself from growing */
+  /* overflow: hidden; Prevent grid itself from growing */
+  overflow-y: auto;
 }
 
 /* Panels */
@@ -59,12 +60,14 @@
   display: flex;
   flex-direction: column;
   /* background/border handled by glass-card class in JSX */
-  overflow: hidden; 
+  overflow: ;
   max-height: 100%;
 }
 
 .controls-panel {
   padding: 20px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto; /* Allow scroll if controls are many */
 }
 
@@ -89,7 +92,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow: hidden; /* Don't let info panel grow */
+  overflow: auto; /* Don't let info panel grow */
+  min-height: 0;
 }
 
 .complexity-card {
@@ -99,7 +103,7 @@
 
 .activity-card {
   flex: 1; /* Take remaining space */
-  overflow: hidden;
+  /* overflow: hidden; */
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -128,10 +132,12 @@
   align-items: center;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.panel-header h3, .complexity-card h3, .activity-card h3 {
+.panel-header h3,
+.complexity-card h3,
+.activity-card h3 {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--primary);
@@ -160,7 +166,7 @@
 /* Responsive */
 @media (max-width: 1200px) {
   .viz-grid {
-    grid-template-columns: 250px 1fr 250px;
+    grid-template-columns: 100px 1fr 100px;
   }
 }
 
@@ -169,7 +175,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
   }
-  
+
   .canvas-panel {
     min-height: 400px;
     order: -1; /* Canvas first on mobile */
@@ -184,11 +190,11 @@
 
 .complexity-details div {
   font-size: 0.95rem;
-  color: #1f2937; 
+  color: #1f2937;
 }
 
 .complexity-label {
   font-weight: 600;
-  color: #6366f1; 
+  color: #6366f1;
   margin-right: 6px;
 }
