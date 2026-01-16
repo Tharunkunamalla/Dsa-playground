@@ -17,6 +17,14 @@ app.use(cors());
 // ✅ Prevent multiple DB connections (important for Vercel)
 let isConnected = false;
 
+// ✅ Check for critical environment variables
+if (!process.env.MONGO_URI) {
+  console.error("❌ MONGO_URI is missing from environment variables!");
+}
+if (!process.env.JWT_SECRET) {
+  console.error("❌ JWT_SECRET is missing from environment variables!");
+}
+
 async function connectDB() {
   if (isConnected) return;
 
@@ -33,7 +41,14 @@ connectDB();
 
 // Routes
 app.get("/", (req, res) => {
-  res.send("DSA Visualizer API is running 🚀");
+  res.json({
+    message: "DSA Visualizer API is running 🚀",
+    dbStatus: isConnected ? "Connected" : "Disconnected",
+    env: {
+      mongo: !!process.env.MONGO_URI,
+      jwt: !!process.env.JWT_SECRET
+    }
+  });
 });
 
 app.use("/api/auth", authRoutes);
