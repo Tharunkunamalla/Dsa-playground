@@ -167,7 +167,7 @@
 @media (max-width: 1024px) {
   .viz-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto; 
+    grid-template-rows: auto 1fr auto;
     /* Controls (auto), Canvas (1fr), Info (auto) or similar order */
     display: flex;
     flex-direction: column;
@@ -181,7 +181,8 @@
   }
 
   /* When stacked, let panels wrap/scroll */
-  .controls-panel, .info-panel {
+  .controls-panel,
+  .info-panel {
     max-height: none;
     overflow: visible;
   }
@@ -197,17 +198,17 @@
     min-height: 300px;
     border-width: 2px;
   }
-  
+
   .viz-breadcrumbs {
     font-size: 0.8rem;
   }
-  
+
   .viz-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
+
   .back-btn {
     align-self: flex-end;
   }
