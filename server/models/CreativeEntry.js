@@ -25,4 +25,5 @@ const CreativeEntrySchema = new mongoose.Schema({
   }
 });
 
-export default mongoose.model('CreativeEntry', CreativeEntrySchema);
+const CreativeEntry = mongoose.models.CreativeEntry || mongoose.model('CreativeEntry', CreativeEntrySchema);
+export default CreativeEntry;

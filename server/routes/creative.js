@@ -20,7 +20,7 @@ const protect = async (req, res, next) => {
       next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      res.status(401).json({ message: 'Not authorized, token failed', error: error.message });
     }
   } else {
     res.status(401).json({ message: 'Not authorized, no token' });
@@ -44,7 +44,7 @@ router.post('/save', protect, async (req, res) => {
     res.status(201).json(newEntry);
   } catch (error) {
     console.error("Save Error:", error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: error.message || 'Server Error' });
   }
 });
 
@@ -57,7 +57,7 @@ router.get('/list', protect, async (req, res) => {
     res.json(entries);
   } catch (error) {
     console.error("Fetch Error:", error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: error.message || 'Server Error' });
   }
 });
 
@@ -81,7 +81,7 @@ router.delete('/:id', protect, async (req, res) => {
         res.json({ message: 'Entry removed' });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: error.message || 'Server Error' });
     }
 });
 
