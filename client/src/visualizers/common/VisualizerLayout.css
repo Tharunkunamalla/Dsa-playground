@@ -164,6 +164,7 @@
 }
 
 /* Responsive */
+
 @media (max-width: 1024px) {
   .viz-grid {
     grid-template-columns: 1fr;
