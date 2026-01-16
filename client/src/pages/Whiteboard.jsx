@@ -33,7 +33,7 @@ const Whiteboard = () => {
 
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      const res = await axios.get('http://localhost:5000/api/creative/list', config);
+      const res = await axios.get('/api/creative/list', config);
       setSavedItems(res.data);
     } catch (error) {
       console.error('Error fetching history:', error);
@@ -105,7 +105,7 @@ const Whiteboard = () => {
         };
       }
 
-      await axios.post('http://localhost:5000/api/creative/save', payload, config);
+      await axios.post('/api/creative/save', payload, config);
       toast.success('Saved successfully!');
       setEntryTitle(''); // Reset title after save
       if (historyOpen) fetchHistory(); // Refresh list if open
@@ -167,7 +167,7 @@ const Whiteboard = () => {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
         const token = userInfo ? userInfo.token : null;
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        await axios.delete(`http://localhost:5000/api/creative/${id}`, config);
+        await axios.delete(`/api/creative/${id}`, config);
         toast.success("Deleted successfully");
         fetchHistory();
     } catch (error) {
