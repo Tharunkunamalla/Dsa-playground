@@ -18,3 +18,28 @@
 .tree-canvas text {
   transition: all 0.5s ease-in-out;
 }
+
+/* Tree Controls */
+.input-with-btn {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .input-with-btn {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  
+  .input-with-btn input,
+  .input-with-btn button {
+    width: 100%;
+  }
+  
+  .tree-canvas svg {
+    height: auto;
+    min-height: 300px;
+  }
+}

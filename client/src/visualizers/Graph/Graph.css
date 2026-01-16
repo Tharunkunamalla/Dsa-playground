@@ -84,4 +84,26 @@
 .btn-group {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .controls-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .custom-dropdown {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .btn-group {
+    width: 100%;
+  }
+  
+  .btn-group button {
+    flex: 1;
+  }
 }

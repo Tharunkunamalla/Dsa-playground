@@ -60,7 +60,7 @@
   display: flex;
   flex-direction: column;
   /* background/border handled by glass-card class in JSX */
-  overflow: ;
+  overflow: hidden;
   max-height: 100%;
 }
 
@@ -164,24 +164,56 @@
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-  .viz-grid {
-    grid-template-columns: 100px 1fr 100px;
-  }
-}
-
 @media (max-width: 1024px) {
   .viz-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto 1fr auto; 
+    /* Controls (auto), Canvas (1fr), Info (auto) or similar order */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
   }
 
   .canvas-panel {
-    min-height: 400px;
-    order: -1; /* Canvas first on mobile */
+    min-height: 350px;
+    flex: 0 0 400px; /* fixed height mostly, or flex */
+    order: -1; /* Canvas at top */
+  }
+
+  /* When stacked, let panels wrap/scroll */
+  .controls-panel, .info-panel {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .viz-container {
+    height: auto; /* Allow full page scroll heavily on mobile */
+    min-height: 100vh;
   }
 }
 
+@media (max-width: 600px) {
+  .canvas-panel {
+    min-height: 300px;
+    border-width: 2px;
+  }
+  
+  .viz-breadcrumbs {
+    font-size: 0.8rem;
+  }
+  
+  .viz-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .back-btn {
+    align-self: flex-end;
+  }
+}
+
+/* Complexity Details */
 .complexity-details {
   display: flex;
   flex-direction: column;

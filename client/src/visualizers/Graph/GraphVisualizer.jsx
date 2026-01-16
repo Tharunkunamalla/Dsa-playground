@@ -232,7 +232,12 @@ const GraphVisualizer = () => {
       </div>
 
       <div className="graph-canvas">
-        <svg width="100%" height="100%" viewBox="0 0 600 400">
+        <svg 
+          width="100%" 
+          height="100%" 
+          viewBox="0 0 600 400" 
+          preserveAspectRatio="xMidYMid meet"
+        >
            {/* Edges */}
              {edges.map((edge, idx) => {
                const start = nodes.find(n => n.id === edge.source);

@@ -72,3 +72,16 @@ a {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
+
+/* Global Responsive Adjustments */
+@media (max-width: 768px) {
+  html {
+    font-size: 90%; /* Scale down slightly on tablets/mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 85%; /* Further scale on small mobile */
+  }
+}

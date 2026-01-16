@@ -204,15 +204,90 @@ body.dark-mode {
   overflow-y: auto;
 }
 
-/* Mobile */
+/* Mobile & Tablet */
 @media (max-width: 768px) {
+  :root {
+    --sidebar-width: 260px;
+    --navbar-height: 60px;
+  }
+
+  .top-navbar {
+    margin: 0.5rem 0.5rem 0 0.5rem;
+    padding: 0 1rem;
+  }
+
+  .brand-logo-nav {
+    font-size: 1.25rem;
+  }
+  
+  .main-body {
+    margin-top: 0.5rem;
+  }
+  
   .sidebar {
     position: fixed;
-    height: calc(100vh - var(--navbar-height) - 2rem);
+    top: calc(var(--navbar-height) + 1rem); /* adjusting for margin */
+    bottom: 1rem;
+    left: 0.5rem;
+    height: auto; 
     z-index: 50;
+    transform: translateX(-110%);
+    width: var(--sidebar-width);
   }
   
   .sidebar.open {
+    transform: translateX(0);
     width: var(--sidebar-width);
+    /* Ensure background is opaque enough or distinct on mobile overlap */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+  }
+
+  body.dark-mode .sidebar.open {
+    background: rgba(30, 41, 59, 0.95);
+  }
+
+  /* Overlay backing when sidebar is open on mobile */
+  .sidebar.open::before {
+    content: '';
+    position: fixed;
+    top: -100px; /* cover top gap */
+    left: -100px;
+    width: 200vw;
+    height: 200vh;
+    background: rgba(0,0,0,0.3);
+    z-index: -1;
+    pointer-events: auto; /* Could capture clicks to close if implemented in JS */
+  }
+  
+  .content-area {
+    padding: 0 0.5rem 0.5rem 0.5rem;
+  }
+
+  .nav-right {
+    gap: 0.75rem;
+  }
+  
+  .user-menu {
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .user-name {
+    display: none; /* Hide username on small screens to save space */
+  }
+}
+
+@media (max-width: 480px) {
+  .top-navbar {
+    padding: 0 0.5rem;
+  }
+
+  .brand-logo-nav {
+    font-size: 1.1rem;
+  }
+  
+  .login-btn-nav {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
   }
 }
