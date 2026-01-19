@@ -41,14 +41,15 @@ async function connectDB() {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error("❌ MongoDB Connection Error:", e);
     throw e;
   }
 
   return cached.conn;
 }
 
-// Initialize connection (don't await here, await in handler)
-connectDB();
+// Initialize connection (swallow error here prevents startup crash, middleware will handle it)
+connectDB().catch(err => console.error("Initial DB connection failed (will retry on request):", err));
 
 // ✅ Custom Middleware: Await DB Connection for every request
 app.use(async (req, res, next) => {
