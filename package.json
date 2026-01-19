@@ -1,6 +1,7 @@
 {
   "name": "dsa-visualizer-root",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm run dev",
