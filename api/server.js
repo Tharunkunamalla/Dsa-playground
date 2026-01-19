@@ -14,36 +14,53 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ✅ Prevent multiple DB connections (important for Vercel)
-let isConnected = false;
+// ✅ Cached connection for Serverless
+let cached = global.mongoose;
 
-// ✅ Check for critical environment variables
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI is missing from environment variables!");
-}
-if (!process.env.JWT_SECRET) {
-  console.error("❌ JWT_SECRET is missing from environment variables!");
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function connectDB() {
-  if (isConnected) return;
-
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    isConnected = true;
-    console.log("✅ MongoDB Connected");
-  } catch (err) {
-    console.error("❌ MongoDB Connection Error:", err);
+  if (cached.conn) {
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {
+      console.log("✅ New MongoDB Connection Established");
+      return mongoose;
+    });
+  }
+  
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
+  }
+
+  return cached.conn;
 }
 
+// Initialize connection (don't await here, await in handler)
 connectDB();
+
+// ✅ Custom Middleware: Await DB Connection for every request
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
 // Routes
 app.get("/", (req, res) => {
   res.json({
     message: "DSA Visualizer API is running 🚀",
-    dbStatus: isConnected ? "Connected" : "Disconnected",
+    dbStatus: cached.conn ? "Connected" : "Disconnected",
     env: {
       mongo: !!process.env.MONGO_URI,
       jwt: !!process.env.JWT_SECRET
