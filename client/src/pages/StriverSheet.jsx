@@ -69,7 +69,7 @@ const StriverSheet = () => {
     <div className="striver-container animate-fade-in">
       <div className="sheet-header">
         <h1>Striver's DSA Sheet</h1>
-        <p>Track your progress and master DSA concepts effectively.</p>
+        <p>Master DSA concepts effectively.</p>
       </div>
 
       <div className="topics-list">
@@ -90,9 +90,9 @@ const StriverSheet = () => {
                 {section.problems.map((prob) => (
                   <div key={prob.id} className={`problem-item ${completed[prob.id] ? 'completed' : ''}`}>
                     <div className="problem-info">
-                      <span className="problem-title">{prob.title}</span>
                       <a href={prob.link} target="_blank" rel="noopener noreferrer" className="yt-link">
-                        <FaYoutube /> Watch
+                      <span className="problem-title">{prob.title}</span>
+                        {/* <FaYoutube /> Watch */}
                       </a>
                     </div>
                     <button onClick={() => toggleComplete(prob.id)} className="check-btn">
