@@ -16,6 +16,7 @@ const connectDB = async () => {
     if (!cached.promise) {
         const opts = {
             bufferCommands: false, // Return errors immediately rather than buffering
+            serverSelectionTimeoutMS: 5000, // Fail after 5 seconds if not connected
         };
 
         const uri = process.env.MONGO_URI;

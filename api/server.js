@@ -31,6 +31,15 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/api/debug", (req, res) => {
+  res.json({
+    message: "Debug Info",
+    mongoEnv: process.env.MONGO_URI ? "Set" : "Not Set",
+    mongoConn: mongoose.connection.readyState, // 0: disconnected, 1: connected, 2: connecting, 3: disconnecting
+    cachedState: global.mongoose ? "Present" : "Missing"
+  });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/creative", creativeRoutes);
 
