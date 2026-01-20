@@ -172,7 +172,7 @@ const Whiteboard = () => {
 
   const deleteItem = async (e, id) => {
     e.stopPropagation();
-    if(!window.confirm("Are you sure you want to delete this item?")) return;
+    if(!window.confirm("Are you sure you want to delete this item? This action cannot be undone.")) return;
 
     try {
         const userInfo = JSON.parse(localStorage.getItem('userInfo'));
