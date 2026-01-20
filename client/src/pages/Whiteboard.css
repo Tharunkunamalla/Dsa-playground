@@ -71,6 +71,8 @@
   display: flex;
   flex-direction: column;
   overflow: visible; /* Let children expand */
+  align-items: center; /* Center horizontally */
+  justify-content: center; /* Center vertically if space allows */
 }
 
 .write-area {

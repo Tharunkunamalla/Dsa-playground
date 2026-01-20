@@ -21,9 +21,7 @@ const Whiteboard = () => {
   const [notes, setNotes] = useState('');
   
   // Panning State
-  // Panning State
   const isPanningRef = useRef(false);
-  const lastMousePosRef = useRef({ x: 0, y: 0 }); // Use Ref for synchronous updates during drag
   const lastMousePosRef = useRef({ x: 0, y: 0 }); // Use Ref for synchronous updates during drag
   const [entryTitle, setEntryTitle] = useState('');
 
