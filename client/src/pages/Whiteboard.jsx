@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaPen, FaEraser, FaTrash, FaSave, FaStickyNote, FaHistory, FaTimes } from 'react-icons/fa';
+import { FaPen, FaEraser, FaTrash, FaSave, FaStickyNote, FaHistory, FaTimes, FaHandPaper } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -10,13 +10,20 @@ const Whiteboard = () => {
   const [activeTab, setActiveTab] = useState('draw'); // 'draw' or 'write'
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
+  const drawAreaRef = useRef(null); // Ref for scrollable container
   const clickTimeoutRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#ffffff');
   const [brushSize, setBrushSize] = useState(5);
-  const [isEraser, setIsEraser] = useState(false);
+  const [tool, setTool] = useState('pen'); // 'pen', 'eraser', 'pan'
+  // const [isEraser, setIsEraser] = useState(false); // Removed in favor of 'tool' state
   const [notes, setNotes] = useState('');
+  
+  // Panning State
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
   const [entryTitle, setEntryTitle] = useState('');
+
   
   const [historyOpen, setHistoryOpen] = useState(false);
   const [savedItems, setSavedItems] = useState([]);
@@ -183,10 +190,12 @@ const Whiteboard = () => {
       const canvas = canvasRef.current;
       // Handle high DPI displays
       const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
+      // Fixed large size
+      const width = 3000;
+      const height = 3000;
       
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr; // Make it fit the container
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
       
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr, dpr);
@@ -195,14 +204,14 @@ const Whiteboard = () => {
       ctx.lineWidth = brushSize;
       contextRef.current = ctx;
       
-      // Prevent scrolling when touching canvas
-      canvas.style.touchAction = "none";
+      // Prevent scrolling when touching canvas (handled manually if needed, but we want native scroll usually)
+      // canvas.style.touchAction = "none"; 
     }
   }, [activeTab]);
 
   useEffect(() => {
     if (contextRef.current) {
-        if (isEraser) {
+        if (tool === 'eraser') {
             contextRef.current.globalCompositeOperation = 'destination-out';
             contextRef.current.lineWidth = brushSize * 2; // Eraser is bigger
         } else {
@@ -211,7 +220,7 @@ const Whiteboard = () => {
             contextRef.current.lineWidth = brushSize;
         }
     }
-  }, [color, brushSize, isEraser]);
+  }, [color, brushSize, tool]);
 
   const getCoordinates = (event) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
@@ -241,9 +250,12 @@ const Whiteboard = () => {
   };
 
   const startDrawing = (e) => {
-    // Prevent default to avoid scrolling on touch devices
-    // e.preventDefault(); // Don't prevent default on mouse events indiscriminately
-    
+    if (tool === 'pan') {
+        setIsPanning(true);
+        setLastMousePosition({ x: e.clientX, y: e.clientY });
+        return;
+    }
+
     const { x, y } = getCoordinates(e);
     contextRef.current.beginPath();
     contextRef.current.moveTo(x, y);
@@ -251,18 +263,29 @@ const Whiteboard = () => {
   };
 
   const finishDrawing = () => {
+    if (tool === 'pan') {
+        setIsPanning(false);
+        return;
+    }
+
     contextRef.current.closePath();
-    
-    // If I was using destination-out, it clears alpha. 
-    // But since my background is CSS-only (#1a1a2e), clearing alpha reveals transparent (which shows the CSS background).
-    // Wait, canvas save to DataURL will save transparency. 
-    // When loading back, drawing a transparent image on a canvas with NO background fill will keep it transparent.
-    // And CSS shows through. This is correct behavior!
-    
     setIsDrawing(false);
   };
 
   const draw = (e) => {
+    if (tool === 'pan') {
+        if (!isPanning) return;
+        const dx = e.clientX - lastMousePosition.x;
+        const dy = e.clientY - lastMousePosition.y;
+        
+        if (drawAreaRef.current) {
+            drawAreaRef.current.scrollLeft -= dx;
+            drawAreaRef.current.scrollTop -= dy;
+        }
+        setLastMousePosition({ x: e.clientX, y: e.clientY });
+        return;
+    }
+
     if (!isDrawing) return;
     const { x, y } = getCoordinates(e);
     contextRef.current.lineTo(x, y);
@@ -366,25 +389,49 @@ const Whiteboard = () => {
                 title="Brush Size"
               />
               <button 
-                onClick={() => setIsEraser(!isEraser)} 
+                onClick={() => setTool('pen')} 
+                title="Pen Tool"
+                className={tool === 'pen' ? 'active-tool' : ''}
+                style={{ 
+                  background: tool === 'pen' ? 'rgba(99, 102, 241, 0.5)' : '',
+                  color: color
+                }}
+              >
+                <FaPen />
+              </button>
+              <button 
+                onClick={() => setTool(tool === 'eraser' ? 'pen' : 'eraser')} 
                 title="Eraser"
-                className={isEraser ? 'active-tool' : ''}
-                style={{ background: isEraser ? 'rgba(99, 102, 241, 0.5)' : '' }}
+                className={tool === 'eraser' ? 'active-tool' : ''}
+                style={{ background: tool === 'eraser' ? 'rgba(99, 102, 241, 0.5)' : '' }}
               >
                 <FaEraser />
+              </button>
+              <button 
+                onClick={() => setTool(tool === 'pan' ? 'pen' : 'pan')} 
+                title="Pan Tool (Click to toggle)"
+                className={tool === 'pan' ? 'active-tool' : ''}
+                style={{ background: tool === 'pan' ? 'rgba(99, 102, 241, 0.5)' : '' }}
+              >
+                <FaHandPaper />
               </button>
               <button onClick={clearCanvas} title="Clear All">
                 <FaTrash />
               </button>
             </div>
-            <canvas
+            <div className="canvas-container" ref={drawAreaRef}>
+             <canvas
               ref={canvasRef}
               onMouseDown={startDrawing}
               onMouseUp={finishDrawing}
               onMouseMove={draw}
               onMouseLeave={finishDrawing}
               className="drawing-canvas"
+              style={{
+                cursor: tool === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'crosshair'
+              }}
             />
+            </div>
           </div>
         ) : (
           <div className="write-area">

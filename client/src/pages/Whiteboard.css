@@ -68,7 +68,37 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* Keep hidden overall, scroll specific areas */
 }
+
+.canvas-container {
+  flex: 1;
+  width: 100%;
+  overflow: auto; /* Enable scrolling here */
+  position: relative;
+  background: #1a1a2e;
+}
+
+/* Custom Scrollbar for canvas container */
+.canvas-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.canvas-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.canvas-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.canvas-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+
 
 .toolbar {
   display: flex;
@@ -78,6 +108,11 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   align-items: center;
+  position: sticky; /* Sticky toolbar */
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  width: fit-content; /* Don't stretch across full scroll width */
 }
 
 .toolbar input[type="color"] {
@@ -106,13 +141,14 @@
 }
 
 .drawing-canvas {
-  flex: 1;
+  /* flex: 1; -> Remove flex to allow fixed size */
   background: #1a1a2e; /* Dark canvas background */
   border-radius: 8px;
-  cursor: crosshair;
-  width: 100%;
-  height: 100%;
+  /* cursor: crosshair; -> Managed in JS now */
+  width: 3000px;  /* Large fixed width */
+  height: 3000px; /* Large fixed height */
   touch-action: none;
+  display: block; /* Ensure it respects dimensions */
 }
 
 .notes-textarea {
