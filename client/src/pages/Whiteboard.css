@@ -150,6 +150,47 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem;
+  border-radius: 6px;
+}
+
+.zoom-controls button {
+  padding: 0.2rem 0.6rem;
+  font-size: 1.1rem;
+}
+
+.zoom-controls .zoom-level {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 45px;
+  text-align: center;
+}
+
+.zoom-controls .zoom-reset-btn {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-controls .zoom-reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #6366f1;
+}
+
 .drawing-canvas {
   /* flex: 1; -> Remove flex to allow fixed size */
   background: #1a1a2e; /* Dark canvas background */

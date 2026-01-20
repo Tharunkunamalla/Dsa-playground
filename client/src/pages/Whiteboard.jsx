@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FaPen, FaEraser, FaTrash, FaSave, FaStickyNote, FaHistory, FaTimes, FaHandPaper } from 'react-icons/fa';
+import { FaPen, FaEraser, FaTrash, FaSave, FaStickyNote, FaHistory, FaTimes, FaHandPaper, FaCompressArrowsAlt } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -17,11 +17,14 @@ const Whiteboard = () => {
   const [brushSize, setBrushSize] = useState(5);
   const [tool, setTool] = useState('pen'); // 'pen', 'eraser', 'pan'
   // const [isEraser, setIsEraser] = useState(false); // Removed in favor of 'tool' state
+  const [zoom, setZoom] = useState(1); // Zoom scale
   const [notes, setNotes] = useState('');
   
   // Panning State
-  const [isPanning, setIsPanning] = useState(false);
-  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
+  // Panning State
+  const isPanningRef = useRef(false);
+  const lastMousePosRef = useRef({ x: 0, y: 0 }); // Use Ref for synchronous updates during drag
+  const lastMousePosRef = useRef({ x: 0, y: 0 }); // Use Ref for synchronous updates during drag
   const [entryTitle, setEntryTitle] = useState('');
 
   
@@ -233,30 +236,23 @@ const Whiteboard = () => {
     const dpr = window.devicePixelRatio || 1;
     
     // Calculate position relative to canvas
-    const x = (event.clientX - rect.left) * (canvas.width / rect.width);
-    const y = (event.clientY - rect.top) * (canvas.height / rect.height);
-    
-    // If using dpr scaling at context level, we might need to adjust logic. 
-    // However, since we stored the context with scale(dpr,dpr), logical coordinates (0 to rect.width) mapped to Physical (0 to rect.width*dpr).
-    // The event.clientX - rect.left gives logical coordinates relative to viewport.
-    // So simple logical coordinates are enough if context is scaled.
-    
-    // BUT we manually set width/height with dpr. 
-    // width = rect.width * dpr.
-    // context.scale(dpr, dpr).
-    // So if we draw at (10, 10), it draws at physical (10*dpr, 10*dpr).
-    // event.clientX - rect.left = 10. 
+    // We need logical coordinates for the canvas context (which is scaled by dpr)
+    // The rect is scaled by 'zoom' via CSS.
+    // So (clientX - rect.left) is the visual pixel offset.
+    // To get logical canvas coordinate: visual_offset / zoom
     
     return { 
-        x: (event.clientX - rect.left), // Logical coordinates 
-        y: (event.clientY - rect.top) 
+        x: (event.clientX - rect.left) / zoom, 
+        y: (event.clientY - rect.top) / zoom 
     };
   };
 
   const startDrawing = (e) => {
     if (tool === 'pan') {
-        setIsPanning(true);
-        setLastMousePosition({ x: e.clientX, y: e.clientY });
+        // Prevent default browser drag behavior
+        e.preventDefault();
+        isPanningRef.current = true;
+        lastMousePosRef.current = { x: e.clientX, y: e.clientY };
         return;
     }
 
@@ -268,7 +264,7 @@ const Whiteboard = () => {
 
   const finishDrawing = () => {
     if (tool === 'pan') {
-        setIsPanning(false);
+        isPanningRef.current = false;
         return;
     }
 
@@ -278,15 +274,19 @@ const Whiteboard = () => {
 
   const draw = (e) => {
     if (tool === 'pan') {
-        if (!isPanning) return;
-        const dx = e.clientX - lastMousePosition.x;
-        const dy = e.clientY - lastMousePosition.y;
+        if (!isPanningRef.current) return;
+        
+        // Prevent default to ensure smooth dragging
+        e.preventDefault();
+        
+        const dx = e.clientX - lastMousePosRef.current.x;
+        const dy = e.clientY - lastMousePosRef.current.y;
         
         if (drawAreaRef.current) {
             drawAreaRef.current.scrollLeft -= dx;
             drawAreaRef.current.scrollTop -= dy;
         }
-        setLastMousePosition({ x: e.clientX, y: e.clientY });
+        lastMousePosRef.current = { x: e.clientX, y: e.clientY };
         return;
     }
 
@@ -379,7 +379,7 @@ const Whiteboard = () => {
             </div>
          </div>
 
-      <div className="whiteboard-content glass-card">
+      <div className="whiteboard-content glass-card" ref={drawAreaRef}>
         {activeTab === 'draw' ? (
           <div className="draw-area">
             <div className="toolbar">
@@ -427,8 +427,27 @@ const Whiteboard = () => {
               <button onClick={clearCanvas} title="Clear All">
                 <FaTrash />
               </button>
+              
+              <div className="zoom-controls">
+                <button onClick={() => setZoom(z => Math.max(0.1, z - 0.1))} title="Zoom Out">-</button>
+                <span className="zoom-level">{Math.round(zoom * 100)}%</span>
+                <button onClick={() => setZoom(z => Math.min(3, z + 0.1))} title="Zoom In">+</button>
+                <button 
+                    onClick={() => {
+                        setZoom(1);
+                        if (drawAreaRef.current) {
+                            drawAreaRef.current.scrollLeft = 0;
+                            drawAreaRef.current.scrollTop = 0;
+                        }
+                    }} 
+                    className="zoom-reset-btn" 
+                    title="Reset Zoom & View"
+                >
+                    <FaCompressArrowsAlt />
+                </button>
+              </div>
             </div>
-            <div className="canvas-container" ref={drawAreaRef}>
+            <div className="canvas-container">
              <canvas
               ref={canvasRef}
               onMouseDown={startDrawing}
@@ -437,7 +456,9 @@ const Whiteboard = () => {
               onMouseLeave={finishDrawing}
               className="drawing-canvas"
               style={{
-                cursor: tool === 'pan' ? (isPanning ? 'grabbing' : 'grab') : 'crosshair'
+                cursor: tool === 'pan' ? 'grab' : 'crosshair', // Grab is default, active will be 'grabbing' via CSS active or JS logic if needed, but grab is fine for static
+                width: `${3000 * zoom}px`,
+                height: `${3000 * zoom}px`
               }}
             />
             </div>
