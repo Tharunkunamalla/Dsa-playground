@@ -28,10 +28,12 @@ const Whiteboard = () => {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [savedItems, setSavedItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
   // Fetch history
   const fetchHistory = async () => {
     try {
+      setIsHistoryLoading(true);
       if (!user) return;
       
       const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -45,6 +47,8 @@ const Whiteboard = () => {
     } catch (error) {
       console.error('Error fetching history:', error);
       toast.error('Failed to load history');
+    } finally {
+      setIsHistoryLoading(false);
     }
   };
 
@@ -349,7 +353,12 @@ const Whiteboard = () => {
                 <button onClick={() => setHistoryOpen(false)}><FaTimes /></button>
             </div>
             <div className="history-list">
-                {savedItems.length === 0 ? (
+                {isHistoryLoading ? (
+                  <div className="loading-spinner-container">
+                    <div className="spinner"></div>
+                    <p>Loading saved work...</p>
+                  </div>
+                ) : savedItems.length === 0 ? (
                     <p className="empty-msg">No saved items found.</p>
                 ) : (
                     savedItems.map(item => (
