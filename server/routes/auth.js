@@ -1,26 +1,26 @@
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import express from "express";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 const router = express.Router();
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+  return jwt.sign({id}, process.env.JWT_SECRET, {
+    expiresIn: "1d",
   });
 };
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
 // @access  Public
-router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
+router.post("/register", async (req, res) => {
+  const {username, password} = req.body;
 
   try {
-    const userExists = await User.findOne({ username });
+    const userExists = await User.findOne({username});
 
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({message: "User already exists"});
     }
 
     const user = await User.create({
@@ -36,26 +36,26 @@ router.post('/register', async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({message: "Invalid user data"});
     }
   } catch (error) {
     console.error("Register Error:", error);
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map(val => val.message);
-      return res.status(400).json({ message: messages.join(', ') });
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((val) => val.message);
+      return res.status(400).json({message: messages.join(", ")});
     }
-    res.status(500).json({ message: error.message || 'Internal Backend Error' });
+    res.status(500).json({message: error.message || "Internal Backend Error"});
   }
 });
 
 // @route   POST /api/auth/login
 // @desc    Auth user & get token
 // @access  Public
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+router.post("/login", async (req, res) => {
+  const {username, password} = req.body;
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({username});
 
     if (user && (await user.matchPassword(password))) {
       res.json({
@@ -65,11 +65,11 @@ router.post('/login', async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      res.status(401).json({ message: 'Invalid username or password' });
+      res.status(401).json({message: "Invalid username or password"});
     }
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({ message: error.message || 'Server Error' });
+    res.status(500).json({message: error.message || "Server Error"});
   }
 });
 
