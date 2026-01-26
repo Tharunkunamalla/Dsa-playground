@@ -12,6 +12,10 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
 app.use(cors());
 
 // ✅ Custom Middleware: Await DB Connection for every request

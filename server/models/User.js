@@ -9,9 +9,19 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     minlength: 3
   },
+  email: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows multiple null/undefined values, but unique if present
+    trim: true
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   password: {
     type: String,
-    required: true,
     minlength: 6
   },
   completedTopics: [{
@@ -20,7 +30,7 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 UserSchema.pre('save', async function() {
-  if (!this.isModified('password')) return;
+  if (!this.isModified('password') || !this.password) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });

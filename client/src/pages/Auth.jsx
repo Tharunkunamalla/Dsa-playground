@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 import './Auth.css';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
-  const { login, register, user } = useAuth();
+  const { login, register, googleLogin, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -96,6 +97,28 @@ const Auth = () => {
           >
             {isLogin ? 'Sign Up' : 'Login'}
           </button>
+        </div>
+
+
+        <div className="google-auth-divider">
+          <span>OR</span>
+        </div>
+
+        <div className="google-auth-container">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              const res = await googleLogin(credentialResponse.credential);
+              if (!res.success) {
+                setError(res.error);
+              }
+            }}
+            onError={() => {
+              setError('Google Login Failed');
+            }}
+            theme="filled_black"
+            shape="pill"
+            width="300"
+          />
         </div>
       </div>
     </div>

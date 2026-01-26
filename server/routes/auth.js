@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { OAuth2Client } from 'google-auth-library';
 
 const router = express.Router();
 
@@ -70,6 +71,68 @@ router.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({message: error.message || "Server Error"});
+  }
+});
+
+// @route   POST /api/auth/google
+// @desc    Auth with Google
+// @access  Public
+router.post("/google", async (req, res) => {
+  const { token } = req.body;
+
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error("Missing GOOGLE_CLIENT_ID in server .env");
+      return res.status(500).json({ message: "Server Configuration Error: Missing Google Client ID" });
+  }
+
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { name, email, sub } = ticket.getPayload();
+
+    let user = await User.findOne({ googleId: sub });
+    
+    // Fallback: check by email if googleId not found
+    if (!user && email) {
+        user = await User.findOne({ email });
+        if (user) {
+            user.googleId = sub;
+            await user.save();
+        }
+    }
+
+    if (!user) {
+        // Generate unique username
+        let username = name.replace(/\s+/g, '').toLowerCase();
+        let usernameExists = await User.findOne({ username });
+        while (usernameExists) {
+            username = name.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 10000);
+            usernameExists = await User.findOne({ username });
+        }
+
+        user = await User.create({
+            username,
+            email,
+            // password field omitted to avoid minlength validation
+            googleId: sub,
+        });
+    }
+
+    res.json({
+        _id: user._id,
+        username: user.username,
+        completedTopics: user.completedTopics,
+        token: generateToken(user._id),
+    });
+
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(400).json({ message: "Google Sign-In failed" });
   }
 });
 
