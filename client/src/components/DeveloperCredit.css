@@ -85,13 +85,25 @@
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .developer-credit {
-    bottom: 1rem;
-    right: 50%;
-    transform: translateX(50%);
+    bottom: 1.5rem;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) scale(0.9);
     width: max-content;
+    padding: 0.6rem 1rem;
+    background: rgba(255, 255, 255, 0.15); /* Slightly more visible on mobile */
   }
   
   .developer-credit:hover {
-    transform: translateX(50%) translateY(-2px);
+    transform: translateX(-50%) scale(0.92);
+  }
+
+  .developer-avatar {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .developer-name {
+    font-size: 0.9rem;
   }
 }
