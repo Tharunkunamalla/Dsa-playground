@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import './Auth.css';
+import DeveloperCredit from '../components/DeveloperCredit';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -121,6 +122,7 @@ const Auth = () => {
           />
         </div>
       </div>
+      <DeveloperCredit />
     </div>
   );
 };
