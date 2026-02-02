@@ -85,24 +85,51 @@
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .developer-credit {
-    bottom: 1.5rem;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%) scale(0.9);
-    width: max-content;
-    padding: 0.6rem 1rem;
-    background: rgba(255, 255, 255, 0.15); /* Slightly more visible on mobile */
+    position: static;
+    transform: none;
+    width: auto;
+    padding: 0.6rem 1.25rem;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
   
   .developer-credit:hover {
-    transform: translateX(-50%) scale(0.92);
+    transform: scale(1.02);
+  }
+}
+
+@media (max-width: 480px) {
+  .developer-credit {
+    position: static;
+    transform: none;
+    padding: 0.5rem 1rem;
+    border-radius: 40px;
+    width: auto;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .developer-credit:hover {
+    transform: scale(1.02);
   }
 
   .developer-avatar {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
+    border-width: 1.5px;
+  }
+
+  .heartbeat-dot {
+    width: 10px;
+    height: 10px;
+    right: 1px;
+    bottom: 1px;
   }
   
+  .developed-by {
+    font-size: 0.7rem;
+  }
+
   .developer-name {
     font-size: 0.9rem;
   }
